@@ -56,7 +56,8 @@ PMF::~PMF() {
 	--ptr_->n_ptrs_;
 
 	if (ptr_->n_ptrs_ == 0) {
-		delete ptr_;
+                ptr_ = NULL;
+		delete ptr_;       
 	}
 }
 
@@ -93,35 +94,13 @@ double PMF::getProbability(const std::string& value) const {
 }
 
 double PMF::getProbability(const std::string& value, int domain_size) const {
-std::cout << "Get prob." << std::endl;
-std::cout << "value = " << value << std::endl;
 
-
-std::cout << "Size = "; std::cout << ptr_->pmf_.size() << std::endl;
-std::cout << "Domain size = " << domain_size << std::endl;
-std::cout << "Keys are " << std::endl;
-//vector<std::string> v;
-for(std::map<std::string,double>::const_iterator it = ptr_->pmf_.begin(); it != ptr_->pmf_.end(); ++it) {
-//  v.push_back(it->first);
-  std::cout << (*it).first << "\n";
-}
-std::cout << "Klats" << std::endl;
 	std::map<std::string, double>::const_iterator it = ptr_->pmf_.find(value);
-std::cout << "prob test";
 	std::map<std::string, double>::const_iterator itEnd = ptr_->pmf_.end();
 
-std::cout << "Iterator = " << &it << std::endl;
-std::cout << "It end = " << &itEnd << std::endl;
-
-//std::cout << "Length = " << it - ptr_->pmf_.begin() << std::endl;
-
 	if (it != ptr_->pmf_.end()) {
-std::cout << "return prob." << std::endl;
-
-std::cout << "value = " << (*it).second << std::endl;
 		return (*it).second;
 	}
-std::cout << "Going to get unknown prob." << std::endl;
 
 	// if now probability is known for this value, calculate its probability
 	// based on a uniform distribution over all unknown values.
@@ -291,12 +270,10 @@ double PMF::getProbabilityUnknown() const {
 }
 
 double PMF::getProbabilityUnknown(int domain_size) const {
-std::cout << "prob unknown: total prob = " << ptr_->total_prob_ << std::endl;
 
 	if (ptr_->total_prob_ == 1) return 0;
 	assert(domain_size > 0);
 	if (domain_size == (int)ptr_->pmf_.size()) return 0;
-std::cout << "prob unknown: div = " << domain_size - ptr_->pmf_.size() << std::endl;
 
 	return (1 - ptr_->total_prob_) / (domain_size - ptr_->pmf_.size());
 }

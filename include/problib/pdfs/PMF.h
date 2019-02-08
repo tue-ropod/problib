@@ -170,7 +170,7 @@ public:
 	
 	void deserialize (std::string& serializedData );
 
-// protected:
+ protected:
 
 	struct PMFStruct {
 
