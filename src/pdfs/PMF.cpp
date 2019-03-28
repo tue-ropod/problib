@@ -94,14 +94,14 @@ double PMF::getProbability(const std::string& value) const {
 }
 
 double PMF::getProbability(const std::string& value, int domain_size) const {
-
+//std::cout << "get prob: value = " << value << "domain size = " << domain_size << std::endl;
 	std::map<std::string, double>::const_iterator it = ptr_->pmf_.find(value);
 	std::map<std::string, double>::const_iterator itEnd = ptr_->pmf_.end();
 
 	if (it != ptr_->pmf_.end()) {
 		return (*it).second;
 	}
-
+//std::cout << "going to retuen unknown prob" << std::endl;
 	// if now probability is known for this value, calculate its probability
 	// based on a uniform distribution over all unknown values.
 	return getProbabilityUnknown(domain_size);
