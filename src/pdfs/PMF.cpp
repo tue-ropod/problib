@@ -90,17 +90,25 @@ void PMF::cloneStruct() {
 }
 
 double PMF::getProbability(const std::string& value) const {
+//         std::cout << "Get prob 1 " << std::endl;
 	return getProbability(value, ptr_->domain_size_);
 }
 
 double PMF::getProbability(const std::string& value, int domain_size) const {
-
+// std::cout << "Get prob 2.1 " << "value = " << value << std::endl;
+// std::cout << "domain_size = " << domain_size << std::endl;
+//std::map<std::string, double>::const_iterator it = ptr_->pmf_);
 	std::map<std::string, double>::const_iterator it = ptr_->pmf_.find(value);
+//         std::cout << "get prob 2.1.1" << std::endl;
 	std::map<std::string, double>::const_iterator itEnd = ptr_->pmf_.end();
+// std::cout << "Get prob 2.2 " << std::endl;
+
 
 	if (it != ptr_->pmf_.end()) {
+//                 std::cout << "Get prob 2.3 " << std::endl;
 		return (*it).second;
 	}
+// 	std::cout << "Get prob 2.4 " << std::endl;
 
 	// if now probability is known for this value, calculate its probability
 	// based on a uniform distribution over all unknown values.
@@ -271,6 +279,13 @@ double PMF::getProbabilityUnknown() const {
 
 double PMF::getProbabilityUnknown(int domain_size) const {
 
+//         std::cout << "getProbabilityUnknown: domain_size = " << domain_size << std::endl;
+//         std::cout << "domain_size - ptr_->pmf_.size() = " << domain_size - ptr_->pmf_.size() << std::endl;
+//         std::cout << "ptr_->pmf_.size() = " << ptr_->pmf_.size() << std::endl;
+//         std::cout << "ptr_->total_prob_ = " << ptr_->total_prob_ << std::endl;
+//         std::cout << "tr_->total_prob_ == 1 equals " << (ptr_->total_prob_ == 1) << std::endl;
+//         std::cout << "(1 - ptr_->total_prob_) / (domain_size - ptr_->pmf_.size()) = " << (1 - ptr_->total_prob_) / (domain_size - ptr_->pmf_.size()) << std::endl;
+        
 	if (ptr_->total_prob_ == 1) return 0;
 	assert(domain_size > 0);
 	if (domain_size == (int)ptr_->pmf_.size()) return 0;
