@@ -56,7 +56,7 @@ PMF::~PMF() {
 	--ptr_->n_ptrs_;
 
 	if (ptr_->n_ptrs_ == 0) {
-                ptr_ = NULL;
+//                 ptr_ = NULL;
 		delete ptr_;       
 	}
 }
