@@ -42,56 +42,66 @@ Mixture::Mixture() : PDF(-1, PDF::MIXTURE), ptr_(0) {
 }
 
 Mixture::Mixture(const Mixture& orig) : PDF(orig), ptr_(orig.ptr_){
-    if (ptr_) {
-        ++ptr_->n_ptrs_;
-    }
+//     if (ptr_) {
+//         ++ptr_->n_ptrs_;
+//     }
 }
 
 Mixture::~Mixture() {
 	if (ptr_) {
-		--ptr_->n_ptrs_;
+// 		--ptr_->n_ptrs_;
 
-		if (ptr_->n_ptrs_ == 0) {
-			delete ptr_;
-		}
+// 		if (ptr_->n_ptrs_ == 0) {
+// 			delete ptr_;
+// 		}
 	}
 }
 
 Mixture& Mixture::operator=(const Mixture& other)  {
     if (this != &other)  {
     	if (ptr_) {
-			--ptr_->n_ptrs_;
-			if (ptr_->n_ptrs_ == 0) {
-				delete ptr_;
-			}
+// 			--ptr_->n_ptrs_;
+// 			if (ptr_->n_ptrs_ == 0) {
+// 				delete ptr_;
+// 			}
     	}
     	ptr_ = other.ptr_;
-    	++ptr_->n_ptrs_;
+//     	++ptr_->n_ptrs_;
 
     	dimensions_ = other.dimensions_;
     }
     return *this;
 }
 
-Mixture* Mixture::clone() const {
-	return new Mixture(*this);
-}
+/*std::shared_ptr<Mixture> Mixture::clone() const {
+        
+        std::shared_ptr p = std::make_shared<Mixture>(*this);
+	return p;
+}*/
+
+// Mixture* Mixture::clone() const {
+//        return new Mixture(*this);
+// }
+
+/*std::shared_ptr<Mixture> Mixture::clone() const {
+       return std::make_shared<Mixture>(*this);
+}*/
 
 void Mixture::cloneStruct() {
-	if (ptr_->n_ptrs_ > 1) {
-		--ptr_->n_ptrs_;
-		ptr_ = new MixtureStruct(*ptr_);
+	if (ptr_.use_count() > 1) {
+// 		--ptr_->n_ptrs_;
+		ptr_ = std::make_shared<MixtureStruct>(*ptr_);
 	}
 }
 
-double Mixture::getLikelihood(const PDF& pdf) const {
+double Mixture::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 	assert_msg(ptr_, "Mixture does not contain components.");
 	assert(ptr_->num_components_ > 0);
 	assert(ptr_->weights_total_ == 1);
 
 	double likelihood = 0;
 	std::vector<double>::const_iterator it_w =ptr_-> weights_.begin();
-	for (std::vector<PDF*>::const_iterator it_pdf = ptr_->components_.begin(); it_pdf != ptr_->components_.end(); ++it_pdf) {
+	for (std::vector<std::shared_ptr<PDF>>::const_iterator it_pdf = ptr_->components_.begin(); it_pdf != ptr_->components_.end(); ++it_pdf) {
 		likelihood += (*it_w) * (*it_pdf)->getLikelihood(pdf);
 		++it_w;
 	}
@@ -100,10 +110,10 @@ double Mixture::getLikelihood(const PDF& pdf) const {
 
 void Mixture::clear() {
 	if (ptr_) {
-		--ptr_->n_ptrs_;
-		if (ptr_->n_ptrs_ == 0) {
-			delete ptr_;
-		}
+// 		--ptr_->n_ptrs_;
+// 		if (ptr_->n_ptrs_ == 0) {
+// 			delete ptr_;
+// 		}
 		ptr_ = 0;
 	}
 }
@@ -125,7 +135,7 @@ void Mixture::addComponent(const PDF& pdf, double w) {
 	}
 
 	if (!ptr_) {
-		ptr_ = new MixtureStruct();
+		ptr_ = std::make_shared<MixtureStruct>();
 	} else {
 		cloneStruct();
 	}
@@ -169,7 +179,7 @@ std::string Mixture::toString(const std::string& indent) const {
 	std::stringstream ss;
 	ss << "MIX{\n";
 	std::vector<double>::const_iterator it_w = ptr_->weights_.begin();
-	for (std::vector<PDF*>::const_iterator it_pdf = ptr_->components_.begin(); it_pdf != ptr_->components_.end(); ++it_pdf) {
+	for (std::vector<std::shared_ptr<PDF>>::const_iterator it_pdf = ptr_->components_.begin(); it_pdf != ptr_->components_.end(); ++it_pdf) {
 		ss << new_indent << (*it_w) << " : " << (*it_pdf)->toString(new_indent) << "\n";
 		++it_w;
 	}

@@ -46,6 +46,7 @@
 
 #include "problib/datatypes.h"
 
+
 namespace pbl {
 
 /* * * * * * * CONVERSION * * * * * * */
@@ -69,7 +70,7 @@ problib::PDF PDFtoMsg(const PDF& pdf);
  * @param msg The PDF ROS message
  * @return Pointer to the PDF object if conversion was successful; 0 otherwise
  */
-PDF* msgToPDF(const problib::PDF& msg);
+std::shared_ptr<PDF> msgToPDF(const problib::PDF& msg);
 
 /**
  * @brief Converts a PDF ROS message to a Gaussian object if the message represents a Gaussian
@@ -77,7 +78,7 @@ PDF* msgToPDF(const problib::PDF& msg);
  * @return Pointer to the PDF object if conversion was successful
  * (only if the message represents a Gaussian); 0 otherwise
  */
-Gaussian* msgToGaussian(const problib::PDF& msg);
+std::shared_ptr<Gaussian> msgToGaussian(const problib::PDF& msg);
 
 /**
  * @brief Converts a PDF ROS message to a Mixture object if the message represents a Mixture
@@ -85,7 +86,7 @@ Gaussian* msgToGaussian(const problib::PDF& msg);
  * @return Pointer to the PDF object if conversion was successful
  * (only if the message represents a Mixture); 0 otherwise
  */
-Mixture* msgToMixture(const problib::PDF& msg);
+std::shared_ptr<Mixture> msgToMixture(const problib::PDF& msg);
 
 /**
  * @brief Converts a PDF ROS message to a PMF object if the message represents a PMF
@@ -93,36 +94,34 @@ Mixture* msgToMixture(const problib::PDF& msg);
  * @return Pointer to the PDF object if conversion was successful
  * (only if the message represents a PMF); 0 otherwise
  */
-PMF* msgToPMF(const problib::PDF& msg);
+std::shared_ptr<PMF> msgToPMF(const problib::PDF& msg);
 
 /**
  * @brief Casts a PDF object to a Gaussian if the PDF represents a Gaussian
  * @param msg The PDF object
  * @return Pointer to the PDF object if casting was successful; 0 otherwise
  */
-const Gaussian* PDFtoGaussian(const PDF& pdf);
+std::shared_ptr<const Gaussian> PDFtoGaussian(std::shared_ptr<const PDF> pdf);
 
 /**
  * @brief Casts a PDF object to a Mixture if the PDF represents a Mixture
  * @param msg The PDF object
  * @return Pointer to the PDF object if casting was successful; 0 otherwise
  */
-const Mixture* PDFtoMixture(const PDF& pdf);
-
+std::shared_ptr<const Mixture> PDFtoMixture(std::shared_ptr<const PDF> pdf);
 /**
  * @brief Casts a PDF object to a Uniform distribution if the PDF represents a Uniform distribution
  * @param msg The PDF object
  * @return Pointer to the PDF object if casting was successful; 0 otherwise
  */
-const Uniform* PDFtoUniform(const PDF& pdf);
-
+std::shared_ptr<const Uniform> PDFtoUniform(std::shared_ptr<const PDF> pdf);
 
 /**
  * @brief Casts a PDF object to a PMF if the PDF represents a PMF
  * @param msg The PDF object
  * @return Pointer to the PDF object if casting was successful; 0 otherwise
  */
-const PMF* PDFtoPMF(const PDF& pdf);
+std::shared_ptr<const PMF> PDFtoPMF(std::shared_ptr<const PDF>& pdf);
 
 /* * * * * * * OTHER * * * * * * */
 
@@ -132,29 +131,29 @@ std::string typeToName(PDF::PDFType type);
 
 void serialize(const PDF& gauss, problib::PDF& msg);
 
-PDF* deserialize(const problib::PDF& msg, int type, int& i_data);
+std::shared_ptr<PDF> deserialize(const problib::PDF& msg, int type, int& i_data);
 
 void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg);
 
-Gaussian* deserialize_gaussian(const problib::PDF& msg, int& i_data);
+std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data);
 
 void serialize_mixture(const Mixture& mix, problib::PDF& msg);
 
-Mixture* deserialize_mixture(const problib::PDF& msg, int& i_data);
+std::shared_ptr<Mixture> deserialize_mixture(const problib::PDF& msg, int& i_data);
 
 void serialize_uniform(const Uniform& uniform, problib::PDF& msg);
 
-Uniform* deserialize_uniform(const problib::PDF& msg, int& i_data);
+std::shared_ptr<Uniform> deserialize_uniform(const problib::PDF& msg, int& i_data);
 
 void serialize_hybrid(const Hybrid& hybrid, problib::PDF& msg);
 
-Hybrid *deserialize_hybrid(const problib::PDF& msg, int& i_data);
+std::shared_ptr<Hybrid>deserialize_hybrid(const problib::PDF& msg, int& i_data);
 
 void serialize_discrete(const PMF& pmf, problib::PDF& msg);
 
-PMF* deserialize_discrete(const problib::PDF& msg);
+std::shared_ptr<PMF> deserialize_discrete(const problib::PDF& msg);
 
-PDF* deserialize_exact(const problib::PDF& msg);
+std::shared_ptr<PDF> deserialize_exact(const problib::PDF& msg);
 
 }
 

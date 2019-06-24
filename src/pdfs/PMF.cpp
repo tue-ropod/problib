@@ -43,75 +43,52 @@
 
 using namespace pbl;
 
-PMF::PMF(int domain_size) : PDF(1, PDF::DISCRETE), ptr_(new PMFStruct(domain_size)) {
+PMF::PMF(int domain_size) : PDF(1, PDF::DISCRETE), ptr_(std::make_shared<PMFStruct>(domain_size)) {
 }
 
 PMF::PMF(const PMF& pmf) : PDF(1, PDF::DISCRETE), ptr_(pmf.ptr_) {
-    if (ptr_) {
-        ++ptr_->n_ptrs_;
-    }
 }
 
 PMF::~PMF() {
-	--ptr_->n_ptrs_;
-
-	if (ptr_->n_ptrs_ == 0) {
-		delete ptr_;       
-	}
 }
 
 PMF& PMF::operator=(const PMF& other)  {
     if (this != &other)  {
-    	if (ptr_) {
-			--ptr_->n_ptrs_;
-			if (ptr_->n_ptrs_ == 0) {
-				delete ptr_;
-			}
-    	}
 
     	ptr_ = other.ptr_;
-    	++ptr_->n_ptrs_;
 
     	dimensions_ = other.dimensions_;
     }
+    
     return *this;
 }
 
-PMF* PMF::clone() const {
-	return new PMF(*this);
-}
+/*std::shared_ptr<PMF> PMF::clone() const {
+        std::shared_ptr<PMF> p = std::make_shared<PMF>(this);
+	return p;
+}*/
 
 void PMF::cloneStruct() {
-	if (ptr_->n_ptrs_ > 1) {
-		--ptr_->n_ptrs_;
-		ptr_ = new PMFStruct(*ptr_);
-	}
+        
+        if( ptr_.use_count() > 1)
+        {
+                ptr_ = std::make_shared<PMFStruct>(PMFStruct(*ptr_));
+        }
 }
 
 double PMF::getProbability(const std::string& value) const {
-//         std::cout << "Get prob 1 " << std::endl;
 	return getProbability(value, ptr_->domain_size_);
 }
 
 double PMF::getProbability(const std::string& value, int domain_size) const {
-// std::cout << "Get prob 2.1 " << "value = " << value << std::endl;
-// std::cout << "domain_size = " << domain_size << std::endl;
-//std::map<std::string, double>::const_iterator it = ptr_->pmf_);
-
-//std::cout << "get prob: value = " << value << "domain size = " << domain_size << std::endl;
 
 	std::map<std::string, double>::const_iterator it = ptr_->pmf_.find(value);
-//         std::cout << "get prob 2.1.1" << std::endl;
 	std::map<std::string, double>::const_iterator itEnd = ptr_->pmf_.end();
-// std::cout << "Get prob 2.2 " << std::endl;
-
 
 	if (it != ptr_->pmf_.end()) {
-//                 std::cout << "Get prob 2.3 " << std::endl;
 		return (*it).second;
 	}
-// 	std::cout << "Get prob 2.4 " << std::endl;
-//std::cout << "going to retuen unknown prob" << std::endl;
+
 	// if now probability is known for this value, calculate its probability
 	// based on a uniform distribution over all unknown values.
 	return getProbabilityUnknown(domain_size);
@@ -131,9 +108,8 @@ void PMF::setProbability(const std::string& value, double p) {
 }
 
 void PMF::setExact(const std::string& value) {
-	if (ptr_->n_ptrs_ > 1) {
-		--ptr_->n_ptrs_;
-		ptr_ = new PMFStruct(ptr_->domain_size_);
+        if (ptr_.use_count() > 1) {
+                 ptr_ = std::make_shared<PMFStruct>(PMFStruct(*ptr_));
 	} else {
 		ptr_->pmf_.clear();
 	}
@@ -170,25 +146,27 @@ bool PMF::getExpectedValue(std::string& v) const {
 	return true;
 }
 
-double PMF::getLikelihood(const PDF& pdf) const {
-	assert_msg(pdf.type() == PDF::DISCRETE, "PMF: Likelihood can only be calculated with another PMF.");
+double PMF::getLikelihood(std::shared_ptr<const PDF> pdf) const {
+	assert_msg(pdf->type() == PDF::DISCRETE, "PMF: Likelihood can only be calculated with another PMF.");
 
-	const PMF* pmf = static_cast<const pbl::PMF*>(&pdf);
-	return getLikelihood(*pmf);
+	std::shared_ptr<const PMF> pmf = std::static_pointer_cast<const pbl::PMF>(pdf);
+	return getLikelihood(pmf);
 }
 
-double PMF::getLikelihood(const PMF& other) const {
+double PMF::getLikelihood(std::shared_ptr<const PMF> other) const {
 	int my_domain_size = ptr_->domain_size_;
-	int other_domain_size = other.ptr_->domain_size_;
+	int other_domain_size = other->ptr_->domain_size_;
 
+     //   std::cout << "problib: my_domain_size = " << my_domain_size << "other_domain_size = " << other_domain_size << std::endl;
+        
 	assert(my_domain_size == -1 || other_domain_size == -1 || my_domain_size == other_domain_size);
 	int domain_size = std::max(my_domain_size, other_domain_size);
 
 	// determine which pmf has the most determined values, and which one less
 	const PMF* small_pmf = this;
-	const PMF* big_pmf = &other;
-	if (this->ptr_->pmf_.size() > other.ptr_->pmf_.size()) {
-		small_pmf = &other;
+	const PMF* big_pmf = other.get();
+	if (this->ptr_->pmf_.size() > other->ptr_->pmf_.size()) {
+		small_pmf = other.get();
 		big_pmf = this;
 	}
 
@@ -233,13 +211,13 @@ double PMF::getLikelihood(const PMF& other) const {
 /**
  * @todo: make this implementation more efficient (no need for O(log n) look-ups)
  */
-void PMF::update(const pbl::PMF& other) {
-    assert(this->ptr_->domain_size_ == -1 || other.ptr_->domain_size_ == -1
-    		|| this->ptr_->domain_size_ == other.ptr_->domain_size_);
+void PMF::update(std::shared_ptr<const pbl::PMF> other) {
+    assert(this->ptr_->domain_size_ == -1 || other->ptr_->domain_size_ == -1
+    		|| this->ptr_->domain_size_ == other->ptr_->domain_size_);
 
     cloneStruct();
 
-    this->ptr_->domain_size_ = std::max(this->ptr_->domain_size_, other.ptr_->domain_size_);
+    this->ptr_->domain_size_ = std::max(this->ptr_->domain_size_, other->ptr_->domain_size_);
 
 	// calculate likelihood
 	double likelihood = getLikelihood(other);
@@ -251,13 +229,13 @@ void PMF::update(const pbl::PMF& other) {
 
 	ptr_->total_prob_ = 0;
 	for(std::map<std::string, double>::iterator it = ptr_->pmf_.begin(); it != ptr_->pmf_.end(); ++it) {
-		double new_prob = (*it).second * other.getProbability((*it).first, this->ptr_->domain_size_) / likelihood;
+		double new_prob = (*it).second * other->getProbability((*it).first, this->ptr_->domain_size_) / likelihood;
 		(*it).second = new_prob;
 		ptr_->total_prob_ += new_prob;
 		updated_values.insert((*it).first);
 	}
 
-	for(std::map<std::string, double>::const_iterator it = other.ptr_->pmf_.begin(); it != other.ptr_->pmf_.end(); ++it) {
+	for(std::map<std::string, double>::const_iterator it = other->ptr_->pmf_.begin(); it != other->ptr_->pmf_.end(); ++it) {
 		if (updated_values.find((*it).first) == updated_values.end()) {
 			double new_prob = p_unknown * (*it).second / likelihood;
 			ptr_->pmf_[(*it).first] = new_prob;
@@ -281,13 +259,6 @@ double PMF::getProbabilityUnknown() const {
 
 double PMF::getProbabilityUnknown(int domain_size) const {
 
-//         std::cout << "getProbabilityUnknown: domain_size = " << domain_size << std::endl;
-//         std::cout << "domain_size - ptr_->pmf_.size() = " << domain_size - ptr_->pmf_.size() << std::endl;
-//         std::cout << "ptr_->pmf_.size() = " << ptr_->pmf_.size() << std::endl;
-//         std::cout << "ptr_->total_prob_ = " << ptr_->total_prob_ << std::endl;
-//         std::cout << "tr_->total_prob_ == 1 equals " << (ptr_->total_prob_ == 1) << std::endl;
-//         std::cout << "(1 - ptr_->total_prob_) / (domain_size - ptr_->pmf_.size()) = " << (1 - ptr_->total_prob_) / (domain_size - ptr_->pmf_.size()) << std::endl;
-        
 	if (ptr_->total_prob_ == 1) return 0;
 	assert(domain_size > 0);
 	if (domain_size == (int)ptr_->pmf_.size()) return 0;
@@ -338,10 +309,9 @@ std::string PMF::toString(const std::string& indent) const {
 }
 
 void PMF::serialize(std::string& serializedData) const
-{
+{        
   serializedData.append( ToString( ptr_->domain_size_ ) );
   serializedData.append( ToString( ptr_->total_prob_ ) );
-  serializedData.append( ToString( ptr_->n_ptrs_ ) );
   
     for ( std::map<std::string, double>::iterator it = ptr_->pmf_.begin(); it != ptr_->pmf_.end(); it++ ) 
     {
@@ -373,13 +343,6 @@ void PMF::deserialize (std::string& serializedData )
         ptr_->total_prob_ += ( double ) serializedData[ii];
     }
 
-    iiStart = iiEnd + 1;
-    iiEnd += sizeof ( int );
-    for ( unsigned int ii = iiStart; ii < iiEnd; ii++ ) 
-    {
-        ptr_->n_ptrs_ += ( int ) serializedData[ii];
-    }
-
     for ( unsigned int jj = 0; jj < ptr_->domain_size_; jj++ ) 
     {
         iiStart = iiEnd + 1;
@@ -408,6 +371,7 @@ void PMF::deserialize (std::string& serializedData )
 
         ptr_->pmf_.insert ( ptr_->pmf_.end(), std::pair<std::string,double> ( key, value ) );
     }
+    
   
 }
 

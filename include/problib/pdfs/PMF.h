@@ -50,7 +50,7 @@ namespace pbl {
  * @brief This class represents a discrete probability distribution (or probability
  * mass function). Currently, this PMF can only take strings as values.
  */
-class PMF : public PDF {
+class PMF : public PDF{
 
 public:
 
@@ -85,8 +85,13 @@ public:
      * copies a pointer. A deep clone will only be created if the original
      * object is modified.
      */
-	PMF* clone() const;
+	//std::shared_ptr<PMF> clone() const;
+	//std::shared_ptr<PMF> clone() const;
 
+	       std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
+   
+    std::shared_ptr<PMF> CloneMethod() const {return std::make_shared< PMF>(*this);}
+	
     /**
      * @brief Returns the probability of the given value
      * @return The probability of the given value
@@ -122,9 +127,9 @@ public:
      */
 	void getProbabilities(std::vector<double>& probabilities) const;
 
-	double getLikelihood(const PDF& pdf) const;
+	double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
-	double getLikelihood(const PMF& pmf) const;
+	double getLikelihood(std::shared_ptr<const PMF> pmf) const;
 
     /**
      * @brief Returns in parameter v the expected value for this distribution, i.e., the
@@ -133,7 +138,7 @@ public:
      */
 	bool getExpectedValue(std::string& v) const;
 
-	void update(const pbl::PMF& pmf);
+	void update(std::shared_ptr<const pbl::PMF> pmf);
 
     /**
      * @brief Sets the domain size of this discrete distribution
@@ -166,13 +171,12 @@ public:
 
 	std::string getMostProbableValue() const;
 	
-	void serialize(std::string& serializedData) const;
 	
-	void deserialize (std::string& serializedData );
 
- protected:
+ //protected:
 
 	struct PMFStruct {
+//         public:
 
 		int domain_size_;
 
@@ -180,16 +184,18 @@ public:
 
 		std::map<std::string, double> pmf_;
 
-		int n_ptrs_;
+                PMFStruct(int domain_size) : domain_size_(domain_size), total_prob_(0) { }
 
-		PMFStruct(int domain_size) : domain_size_(domain_size), total_prob_(0), n_ptrs_(1) { }
-
-		PMFStruct(const PMFStruct& orig) : domain_size_(orig.domain_size_), total_prob_(orig.total_prob_), pmf_(orig.pmf_), n_ptrs_(1) { }
+                PMFStruct(const PMFStruct& orig) : domain_size_(orig.domain_size_), total_prob_(orig.total_prob_), pmf_(orig.pmf_){ } 
 	};
-
-	PMFStruct* ptr_;
+        
+ 	std::shared_ptr<PMFStruct> ptr_;
 
 	void cloneStruct();
+        
+        void serialize(std::string& serializedData) const;
+        
+        void deserialize (std::string& serializedData );
 
 };
 template <typename T>

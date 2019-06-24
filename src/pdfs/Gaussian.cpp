@@ -39,63 +39,84 @@
 
 using namespace pbl;
 
-Gaussian::Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
-}
+//Gaussian::Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
+//}
 
-Gaussian::Gaussian(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : PDF(mu.size(), PDF::GAUSSIAN), ptr_(new GaussianStruct(mu, cov)) {
-}
+//Gaussian::Gaussian(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : PDF(mu.size(), PDF::GAUSSIAN), ptr_(std::make_shared<GaussianStruct>(mu, cov)) {
+//}
 
-Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
-    if (ptr_) {
-        ++ptr_->n_ptrs_;
-    }
-}
+ Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
+//     //if (ptr_) {
+//     //    ++ptr_->n_ptrs_;
+//     //}
+ }
 
 Gaussian::~Gaussian() {
-	if (ptr_) {
-		--ptr_->n_ptrs_;
-
-		if (ptr_->n_ptrs_ == 0) {
-			delete ptr_;
-		}
-	}
+	//if (ptr_) {
+	//	--ptr_->n_ptrs_;
+//
+//		if (ptr_->n_ptrs_ == 0) {
+//			delete ptr_;
+//		}
+//	}
 }
 
 Gaussian& Gaussian::operator=(const Gaussian& other)  {
 	if (this != &other)  {
-		if (ptr_) {
-			--ptr_->n_ptrs_;
-			if (ptr_->n_ptrs_ == 0) {
-				delete ptr_;
-			}
-		}
+//		if (ptr_) {
+//			--ptr_->n_ptrs_;
+//			if (ptr_->n_ptrs_ == 0) {
+//				delete ptr_;
+//			}
+//		}
 		ptr_ = other.ptr_;
-		++ptr_->n_ptrs_;
+//		++ptr_->n_ptrs_;
 
 		dimensions_ = other.dimensions_;
 	}
 	return *this;
 }
 
-Gaussian* Gaussian::clone() const {
-	return new Gaussian(*this);
+/*std::shared_ptr<Gaussian> Gaussian::clone() const {
+        
+        std::shared_ptr<Gaussian> p = std::make_shared< Gaussian>(*this);
+	return p;
 }
+*/
+
+/*std::shared_ptr<Gaussian> Gaussian::clone() const {
+        
+        std::shared_ptr<Gaussian> p = std::make_shared< Gaussian>(*this);
+        return p;
+}*/
+
 
 void Gaussian::cloneStruct() {
-	if (ptr_->n_ptrs_ > 1) {
-		--ptr_->n_ptrs_;
-		ptr_ = new GaussianStruct(*ptr_);
+	if (ptr_.use_count() > 1) {
+		//--ptr_->n_ptrs_;
+		ptr_ = std::make_shared<GaussianStruct>(*ptr_);
 	}
 }
 
-double Gaussian::getLikelihood(const PDF& pdf) const {
+double Gaussian::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 	CHECK_INITIALIZED
-	if (pdf.type() == PDF::GAUSSIAN) {
-		const Gaussian* G = static_cast<const pbl::Gaussian*>(&pdf);
+	if (pdf->type() == PDF::GAUSSIAN) {
+		std::shared_ptr<const Gaussian> G = std::static_pointer_cast<const Gaussian>(pdf);
+               // std::cout << "G = " << G->toString()  << std::endl;
+                
 		return getDensity(*G);
-	} else if (pdf.type() == PDF::UNIFORM) {
-		const Uniform* U = static_cast<const pbl::Uniform*>(&pdf);
-        return U->getLikelihood(*this);
+	} else if (pdf->type() == PDF::UNIFORM) {
+		std::shared_ptr<const Uniform> U = std::static_pointer_cast<const Uniform>(pdf);
+               std::shared_ptr<const PDF> test = shared_from_this();
+                
+          //     ptest = 
+               
+        return U->getLikelihood(test);
+        
+        //std::shared_ptr<const pbl::PDF>&’ from an rvalue of type 
+        //std::shared_ptr<const pbl::PDF>’
+
+        
 	}
 
 	assert_msg(false, "Gaussian: Likelihood can only be calculated with another Gaussian or Uniform pdf.");
@@ -132,6 +153,10 @@ double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2
 
 	double det = S.determinant();
 	// covariance should have non-zero determinant
+        
+//         std::cout << "Gaussian: S = " << S << std::endl;
+//         std::cout << "Gaussian: det = " << det << std::endl;
+        
 	assert(det != 0);
 
 	// calculate difference between v1 and v2
@@ -140,6 +165,9 @@ double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2
 	// calculate squared mahalanobis distance
 	double mahalanobis_dist_sq = diff.dot(S.inverse() * diff );
 	// mahalanobis distance should always be 0 or positive
+        
+       // std::cout << "mahalanobis_dist_sq = " << mahalanobis_dist_sq << " diff = " << diff << "S inverse =  " << S.inverse() << std::endl;
+        
 	assert(mahalanobis_dist_sq >= 0);
 
 	// threshold to 0 if maximum mahalanobis distance is exceeded
@@ -163,7 +191,7 @@ void Gaussian::setMean(const Eigen::VectorXd& mu) {
 	} else {
 	  int nElements = mu.rows()*mu.cols();
 	  Eigen::MatrixXd newMatrix(nElements, nElements);
-	  ptr_ = new GaussianStruct(mu, newMatrix.setZero());
+	  ptr_ = std::make_shared<GaussianStruct>(mu, newMatrix.setZero());
 	}
 
 	ptr_->mu_ = mu;
@@ -174,7 +202,7 @@ void Gaussian::setCovariance(const Eigen::MatrixXd& cov) {
 		cloneStruct(); 
 	} else {
 	  Eigen::VectorXd newMatrix;
-		ptr_ = new GaussianStruct(newMatrix.setZero(cov.cols()), cov);
+		ptr_ = std::make_shared<GaussianStruct>(newMatrix.setZero(cov.cols()), cov);
 	}
 
 	ptr_->cov_ = cov;

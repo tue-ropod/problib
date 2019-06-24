@@ -92,15 +92,16 @@ void test() {
 
 	using namespace pbl;
 
-    Uniform U1(pbl::Vector3(1, 2, 0.8), pbl::Vector3(2, 1, 0.1));
-    Uniform U2(pbl::Vector3(1.2, 2.3, 0.85), pbl::Vector3(2, 1, 0.1));
+   std::shared_ptr<Uniform> U1 = std::make_shared<Uniform>(pbl::Vector3(1, 2, 0.8), pbl::Vector3(2, 1, 0.1));
+    std::shared_ptr<Uniform> U2 = std::make_shared<Uniform>(pbl::Vector3(1.2, 2.3, 0.85), pbl::Vector3(2, 1, 0.1));
 
-
-    cout << U1.toString() << endl;
-    cout << U2.toString() << endl;
-    cout << U1.getLikelihood(U2) << endl;
-    cout << U2.getLikelihood(U1) << endl;
-
+    //std::shared_ptr<Uniform> pU1 =  std::shared_ptr<Uniform>(U1);
+    
+    cout << U1->toString() << endl;
+    cout << U2->toString() << endl;
+    cout << U1->getLikelihood(U2) << endl;
+    cout << U2->getLikelihood(U1) << endl;
+    
     Hybrid H;
 
     PMF pmf1;
@@ -112,7 +113,7 @@ void test() {
 
     cout << H_msg << endl;
 
-    PDF* H_received = pbl::msgToPDF(H_msg);
+    std::shared_ptr<PDF> H_received = pbl::msgToPDF(H_msg);
 
     cout << H_received->toString() << endl;
 
@@ -132,43 +133,44 @@ void test() {
 	mix.addComponent(pdf1, 0.7);
 	mix.addComponent(pdf2, 0.3);
 
-	Mixture mix2;
-	mix2.addComponent(mix, 0.1);
-	mix2.addComponent(pdf3, 0.9);
+	//Mixture mix2;
+        std::shared_ptr<Mixture> mix2 = std::make_shared<Mixture>();
+	mix2->addComponent(mix, 0.1);
+	mix2->addComponent(pdf3, 0.9);
 
-	Gaussian exact2(3);
-	cout << "Before initialization: " << exact2.toString() << endl;
-	exact2.setMean(mean2);
+	std::shared_ptr<Gaussian> exact2 = std::make_shared<Gaussian>(3);
+	cout << "Before initialization: " << exact2->toString() << endl;
+	exact2->setMean(mean2);
 
-	cout << "Mixture: " << endl << mix2.toString() << endl;
+	cout << "Mixture: " << endl << mix2->toString() << endl;
 
 	double d;
 	for (int i = 0; i < 1000; ++i) {
-		d = mix2.getLikelihood(exact2);
+		d = mix2->getLikelihood(exact2);
 	}
 	cout << "Density of mixture at " << mean2 << " = " << d << endl << endl;
 
 	cout << "Converting to msg ..." << endl << endl;
 	problib::PDF pdf_msg;
-	pbl::PDFtoMsg(mix2, pdf_msg);
+	pbl::PDFtoMsg(*(mix2.get()), pdf_msg);
 	cout << "Result:" << endl << pdf_msg << endl;
 
 	cout << "Converting back to pdf ..." << endl << endl;
-	PDF* received_pdf = pbl::msgToPDF(pdf_msg);
+	std::shared_ptr<PDF> received_pdf = pbl::msgToPDF(pdf_msg);
 	cout << "Result:" << endl << received_pdf->toString() << endl << endl;
 
 	cout << "Density of mixture at " << mean2 << " = " << received_pdf->getLikelihood(exact2) << endl << endl;
 
-	delete received_pdf;
+//	delete received_pdf;
 
 	cout << "Creating pmf ..." << endl;
 	PMF pmf;
 	pmf.setDomainSize(3);
 
-	PMF pmf2;
-	pmf2.setDomainSize(3);
-	pmf2.setProbability("A", 0.25);
-	pmf2.setProbability("B", 0.5);
+	std::shared_ptr<PMF> pmf2 = std::make_shared<PMF>();
+	pmf2->setDomainSize(3);
+	pmf2->setProbability("A", 0.25);
+	pmf2->setProbability("B", 0.5);
 	//pmf2.setProbability("C", 0.25);
 
 	cout << pmf.toString() << endl << endl;
@@ -177,9 +179,9 @@ void test() {
 	pmf.update(pmf2);
 	cout << pmf.toString() << endl << endl;
 
-	PMF pmf3;
-	pmf3.setDomainSize(3);
-	pmf3.setProbability("C", 0.999);
+	std::shared_ptr<PMF> pmf3 = std::make_shared<PMF>();
+	pmf3->setDomainSize(3);
+	pmf3->setProbability("C", 0.999);
 
 	cout << "Updating pmf ..." << endl;
 	pmf.update(pmf3);
@@ -203,52 +205,53 @@ void test() {
 	cout << "Result:" << endl << pmf_msg << endl;
 
 	cout << "Converting back to pdf ..." << endl << endl;
-	PDF* received_pdf2 = pbl::msgToPDF(pmf_msg);
+	std::shared_ptr<PDF> received_pdf2 = pbl::msgToPDF(pmf_msg);
 	cout << "Result:" << endl << received_pdf2->toString() << endl << endl;
 
-	delete received_pdf2;
+	//delete received_pdf2;
 
 	cout << "Testing simple population of msg for exact (string) value ..." << endl;
 	problib::PDF exact_str;
 	exact_str.exact_value_str = "test";
-	PDF* pdf_exact_str = pbl::msgToPDF(exact_str);
+	std::shared_ptr<PDF> pdf_exact_str = pbl::msgToPDF(exact_str);
 	cout << "exact_str:" << endl << pdf_exact_str->toString("    ") << endl << endl;
-	delete pdf_exact_str;
+	//delete pdf_exact_str;
 
 	cout << "Testing simple population of msg for exact (real) value ..." << endl;
 	problib::PDF exact_real;
 	exact_real.exact_value_vec.push_back(1);
 	exact_real.exact_value_vec.push_back(1);
 	exact_real.exact_value_vec.push_back(1);
-	PDF* pdf_exact_real = pbl::msgToPDF(exact_real);
+	std::shared_ptr<PDF> pdf_exact_real = pbl::msgToPDF(exact_real);
 	cout << "exact_real:" << endl << pdf_exact_real->toString("    ") << endl << endl;
 
 	startTimer();
 
 	double d2;
 	for(int i = 0; i < 10000; ++i) {
-		d2 = mix2.getLikelihood(*pdf_exact_real);
+		d2 = mix2->getLikelihood(pdf_exact_real);
 	}
 
 	stopTimer("Likelihood on mixture", (double)1 / 10000);
 
-	cout << "Likelihood with mixture = " << mix2.getLikelihood(*pdf_exact_real) << endl << endl;
+	cout << "Likelihood with mixture = " << mix2->getLikelihood(pdf_exact_real) << endl << endl;
 
 	testOutput("Likelihood with mixture", d2, 0.0612611897752479);
 
 	printf("%.16f\n", d2);
 
-	//cout << "Likelihood with itself = " << pdf_exact_real->getLikelihood(*pdf_exact_real) << endl << endl;
+	//cout << "Likelihood with itself = " << pdf_exact_real->getLikelihood(pdf_exact_real) << endl << endl;
 
-	Mixture mix_copy = mix2;
-	mix2.clear();
+	std::shared_ptr<Mixture> mix_copy = mix2->CloneMethod();
+	mix2->clear();
 
-	cout << mix_copy.toString() << endl;
+	cout << mix_copy->toString() << endl;
 	
-	double d3 = mix_copy.getLikelihood(*pdf_exact_real);
+	double d3 = mix_copy->getLikelihood(pdf_exact_real);
 	testOutput("Likelihood with mixture (copy)", d3, d2);
 	
-	delete pdf_exact_real;
+	//delete pdf_exact_real;
+	
 }
 
 int main(int argc, char **argv) {

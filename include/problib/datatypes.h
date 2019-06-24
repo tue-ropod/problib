@@ -48,9 +48,6 @@ typedef Eigen::VectorXd Vector;
 
 typedef Eigen::MatrixXd Matrix;
 
-//typedef arma::mat Matrix;
-;
-
 class Scalar : public Eigen::Matrix<double, 1, 1> {
 
 public:

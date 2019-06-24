@@ -55,12 +55,12 @@ problib::PDF PDFtoMsg(const PDF& pdf) {
     return msg;
 }
 
-PDF* msgToPDF(const problib::PDF& msg) {
+std::shared_ptr<PDF> msgToPDF(const problib::PDF& msg) {
 	int i_data = 1;
 	return deserialize(msg, msg.type, i_data);
 }
 
-Gaussian* msgToGaussian(const problib::PDF& msg) {
+std::shared_ptr<Gaussian> msgToGaussian(const problib::PDF& msg) {
 	int i_data = 1;
 	if (msg.type == problib::PDF::GAUSSIAN) {
 		return deserialize_gaussian(msg, i_data);
@@ -68,7 +68,7 @@ Gaussian* msgToGaussian(const problib::PDF& msg) {
 	return 0;
 }
 
-Mixture* msgToMixture(const problib::PDF& msg) {
+std::shared_ptr<Mixture> msgToMixture(const problib::PDF& msg) {
 	int i_data = 1;
 	if (msg.type == problib::PDF::MIXTURE) {
 		return deserialize_mixture(msg, i_data);
@@ -76,48 +76,60 @@ Mixture* msgToMixture(const problib::PDF& msg) {
 	return 0;
 }
 
-PMF* msgToPMF(const problib::PDF& msg) {
+std::shared_ptr<PMF> msgToPMF(const problib::PDF& msg) {
 	if (msg.type == problib::PDF::DISCRETE) {
 		return deserialize_discrete(msg);
 	}
 	return 0;
 }
 
-const Mixture* PDFtoMixture(const PDF& pdf) {
-	if (pdf.type() != PDF::MIXTURE) {
+std::shared_ptr<const Mixture> PDFtoMixture(std::shared_ptr<const PDF> pdf) {
+	if (pdf->type() != PDF::MIXTURE) {
 		return 0;
 	}
-	return static_cast<const Mixture*>(&pdf);
+	std::shared_ptr<const Mixture> M = std::static_pointer_cast<const Mixture>(pdf);
+        
+        //std::shared_ptr<T> static_pointer_cast( const std::shared_ptr<U>& r ) noexcept;
+        
+	return M;               
 }
 
-const Gaussian* PDFtoGaussian(const PDF& pdf) {
-	if (pdf.type() != PDF::GAUSSIAN) {
+std::shared_ptr<const Gaussian> PDFtoGaussian(std::shared_ptr<const PDF> pdf) {
+	if (pdf->type() != PDF::GAUSSIAN) {
 		return 0;
 	}
-	const Gaussian* G = static_cast<const Gaussian*>(&pdf);
+
+	std::shared_ptr<const Gaussian> G = std::static_pointer_cast<const Gaussian>(pdf);
+       // const Gaussian* G = static_cast<const Gaussian*>(&pdf);
 	return G;
 }
 
-const Uniform* PDFtoUniform(const PDF& pdf) {
-	if (pdf.type() != PDF::UNIFORM) {
+std::shared_ptr<const Uniform> PDFtoUniform(std::shared_ptr<const PDF> pdf) {
+	if (pdf->type() != PDF::UNIFORM) {
 		return 0;
 	}
-	const Uniform* U = static_cast<const Uniform*>(&pdf);
+	std::shared_ptr<const Uniform> U = std::static_pointer_cast<const Uniform>(pdf);
 	return U;
 }
 
-const PMF* PDFtoPMF(const PDF& pdf) {
-	if (pdf.type() != PDF::DISCRETE) {
+std::shared_ptr<const PMF> PDFtoPMF(std::shared_ptr<const PDF> pdf) {
+	if (pdf->type() != PDF::DISCRETE) {
 		return 0;
 	}
-	return static_cast<const PMF*>(&pdf);
+	
+	std::shared_ptr<const PMF> P = std::static_pointer_cast<const PMF>(pdf);
+	return P;
 }
 
-const Hybrid* PDFtoHybrid(const PDF& pdf) {
-    if (pdf.type() != PDF::HYBRID) {
+std::shared_ptr<const Hybrid> PDFtoHybrid(std::shared_ptr<const PDF> pdf) {
+    if (pdf->type() != PDF::HYBRID) {
         return 0;
     }
-    return static_cast<const Hybrid*>(&pdf);
+    
+    std::shared_ptr<const Hybrid> H = std::static_pointer_cast<const Hybrid>(pdf);
+        return H;
+    
+    //return static_cast<std::shared_ptr<const Hybrid>>(&pdf);
 }
 
 std::string typeToName(PDF::PDFType type) {
@@ -156,7 +168,7 @@ void serialize(const PDF& pdf, problib::PDF& msg) {
     }
 }
 
-PDF* deserialize(const problib::PDF& msg, int type, int& i_data) {
+std::shared_ptr<PDF> deserialize(const problib::PDF& msg, int type, int& i_data) {
 	if (type == problib::PDF::MIXTURE) {
 		return deserialize_mixture(msg, i_data);
 	} else if (type == problib::PDF::GAUSSIAN) {
@@ -195,7 +207,7 @@ void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg) {
 	}
 }
 
-Gaussian* deserialize_gaussian(const problib::PDF& msg, int& i_data) {
+std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data) {
 	Eigen::VectorXd mu(msg.dimensions);
 	for(unsigned int i = 0; i < msg.dimensions; ++i) {
 		mu(i) = msg.data[i_data++];
@@ -210,7 +222,7 @@ Gaussian* deserialize_gaussian(const problib::PDF& msg, int& i_data) {
 		}
 	}
 
-	return new Gaussian(mu, cov);
+	return std::make_shared<Gaussian>(mu, cov);
 }
 
 void serialize_mixture(const Mixture& mix, problib::PDF& msg) {
@@ -228,8 +240,8 @@ void serialize_mixture(const Mixture& mix, problib::PDF& msg) {
 	}
 }
 
-Mixture* deserialize_mixture(const problib::PDF& msg, int& i_data) {
-	Mixture* mix = new Mixture();
+std::shared_ptr<Mixture> deserialize_mixture(const problib::PDF& msg, int& i_data) {
+	std::shared_ptr<Mixture> mix = std::make_shared<Mixture>();
 
 	int num_components = (int)msg.data[i_data++];
 
@@ -237,9 +249,9 @@ Mixture* deserialize_mixture(const problib::PDF& msg, int& i_data) {
 		double w = msg.data[i_data++];
 		int type = (int)msg.data[i_data++];
 
-		PDF* component = deserialize(msg, type, i_data);
+		std::shared_ptr<PDF> component = deserialize(msg, type, i_data);
 		mix->addComponent(*component, w);
-		delete component;
+		//delete component;
 	}
 
 	mix->normalizeWeights();
@@ -252,8 +264,8 @@ void serialize_uniform(const Uniform& uniform, problib::PDF& msg) {
 	msg.data.push_back(uniform.getMaxDensity());
 }
 
-Uniform* deserialize_uniform(const problib::PDF& msg, int& i_data) {
-	Uniform* uniform = new Uniform(msg.dimensions);
+std::shared_ptr<Uniform> deserialize_uniform(const problib::PDF& msg, int& i_data) {
+	std::shared_ptr<Uniform> uniform = std::make_shared<Uniform>(msg.dimensions);
 	uniform->setDensity(msg.data[i_data++]);
 	return uniform;
 }
@@ -264,8 +276,8 @@ void serialize_discrete(const PMF& pmf, problib::PDF& msg) {
 	msg.domain_size = pmf.getDomainSize();
 }
 
-PMF* deserialize_discrete(const problib::PDF& msg) {
-	PMF* pmf = new PMF(msg.domain_size);
+std::shared_ptr<PMF> deserialize_discrete(const problib::PDF& msg) {
+	std::shared_ptr<PMF> pmf = std::make_shared<PMF>(msg.domain_size);
 	std::vector<double>::const_iterator it_p = msg.probabilities.begin();
 	for(std::vector<std::string>::const_iterator it_v = msg.values.begin(); it_v != msg.values.end(); ++it_v) {
 		pmf->setProbability(*it_v, *it_p);
@@ -283,8 +295,8 @@ void serialize_hybrid(const Hybrid& hybrid, problib::PDF& msg) {
     msg.data.push_back(hybrid.getPDFS().size());
 
     // add components themselves
-    const std::vector<PDF*> pdfs = hybrid.getPDFS();
-    for(std::vector<PDF*>::const_iterator it = pdfs.begin(); it != pdfs.end(); ++it) {
+    const std::vector<std::shared_ptr<PDF>> pdfs = hybrid.getPDFS();
+    for(std::vector<std::shared_ptr<PDF>>::const_iterator it = pdfs.begin(); it != pdfs.end(); ++it) {
         const PDF& pdf = **it;
 
         if (pdf.type() == PDF::DISCRETE) {
@@ -297,23 +309,23 @@ void serialize_hybrid(const Hybrid& hybrid, problib::PDF& msg) {
     }
 }
 
-Hybrid* deserialize_hybrid(const problib::PDF& msg, int& i_data) {
-    Hybrid* hybrid = new Hybrid();
+std::shared_ptr<Hybrid> deserialize_hybrid(const problib::PDF& msg, int& i_data) {
+    std::shared_ptr<Hybrid> hybrid = std::make_shared<Hybrid>();
 
     int num_components = (int)msg.data[i_data++];
 
     for(int c = 0; c < num_components; ++c) {
         int type = (int)msg.data[i_data++];
 
-        PDF* pdf = deserialize(msg, type, i_data);
+        std::shared_ptr<PDF> pdf = deserialize(msg, type, i_data);
         hybrid->addPDF(*pdf, -1);
-        delete pdf;
+      //  delete pdf;
     }
 
     return hybrid;
 }
 
-PDF* deserialize_exact(const problib::PDF& msg) {
+std::shared_ptr<PDF> deserialize_exact(const problib::PDF& msg) {
 	if (!msg.exact_value_vec.empty()) {
 		// vector value, so we ASSUME continuous
 		unsigned int dim = msg.exact_value_vec.size();
@@ -324,10 +336,10 @@ PDF* deserialize_exact(const problib::PDF& msg) {
 		Eigen::MatrixXd cov;
 		cov.setZero(dim,dim);
 		
-		return new Gaussian(mu, cov);
+		return std::make_shared<Gaussian>(mu, cov);
 	} else if (msg.exact_value_str != "") {
 		// string value, so discrete
-		PMF* pmf = new PMF();
+		std::shared_ptr<PMF> pmf = std::make_shared<PMF>();
 		pmf->setProbability(msg.exact_value_str, 1.0);
 		return pmf;
 	}

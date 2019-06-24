@@ -64,7 +64,14 @@ public:
 
 	virtual ~PDF();
 
-	virtual PDF* clone() const = 0;
+	virtual std::shared_ptr<PDF> clone() const = 0;
+        //virtual std::shared_ptr<PDF> clone() const = nullptr;
+        
+      /*   std::shared_ptr< PDF > Clone() const {
+        //std::cout << "PDF::Clone\n";
+       return CloneImplementation();
+        }
+        */
 
 	//virtual double getDensity(const arma::vec& v) const = 0;
 
@@ -74,7 +81,9 @@ public:
 
 	virtual bool getExpectedValue(Eigen::VectorXd& v) const;
 
-	virtual double getLikelihood(const PDF& pdf) const = 0;
+	//virtual double getLikelihood(const PDF& pdf) const = 0;
+        
+        virtual double getLikelihood(std::shared_ptr<const PDF> pdf) const = 0;
 
 	int dimensions() const;
 
@@ -82,8 +91,17 @@ public:
 
 	virtual std::string toString(const std::string& indent = "") const = 0;
 
+       // typedef std::shared_ptr<PDF> Ptr;
+        
+         // virtual PDF* CloneImplementation() const { return nullptr;}
+       // virtual std::shared_ptr< PDF > CloneImplementation() const {
+       //    return std::shared_ptr< PDF >(new PDF(*this));
+        //}
+          
 protected:
 
+       
+        
 	int dimensions_;
 
 	PDFType type_;

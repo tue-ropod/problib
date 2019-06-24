@@ -48,7 +48,7 @@ namespace pbl {
  *
  * @brief This class represents a multi-variate Gaussian (Normal) distribution.
  */
-class Gaussian: public PDF {
+class Gaussian: public PDF, public std::enable_shared_from_this<Gaussian> {
 
 public:
 
@@ -57,7 +57,9 @@ public:
      * but leaves mean and covariance unspecified.
      * @param dim The dimensionality of the Gaussian
      */
-	Gaussian(int dim);
+	Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
+}
+
 
     /**
      * @brief Constructs a (multi-variate) Gaussian with specified mean and
@@ -65,12 +67,19 @@ public:
      * @param mean The mean vector of the Gaussian
      * @param cov The covariance matrix of the Gaussian
      */
-	Gaussian(const Eigen::VectorXd& mean, const Eigen::MatrixXd& cov);
+	Gaussian(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : PDF(mu.size(), PDF::GAUSSIAN), ptr_(std::make_shared<GaussianStruct>(mu, cov)) {
+}
 
     /**
      * @brief Copy constructor
      */
 	Gaussian(const Gaussian& orig);
+        //Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
+    //if (ptr_) {
+    //    ++ptr_->n_ptrs_;
+    //}
+//}
+
 
     /**
      * @brief Destructor
@@ -89,9 +98,25 @@ public:
      * copies a pointer. A deep clone will only be created if the original
      * object is modified.
      */
-	Gaussian* clone() const;
+    
+    std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
+    
+    std::shared_ptr<Gaussian> CloneMethod() const { 
+            
+      //      Gaussian* Gtest = new Gaussian(*this);
 
-	double getLikelihood(const PDF& pdf) const;
+            
+            std::shared_ptr<Gaussian> G = std::make_shared< Gaussian>(*this);
+            
+            return G;
+}
+    
+    /*  std::shared_ptr< Gaussian > Clone() const {
+        std::cout << "Derived::Clone\n";
+        return std::static_pointer_cast< Gaussian >(CloneImplementation());
+     }
+*/
+	double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
     /**
      * @brief Calculates the density of the Gaussian at point v.
@@ -148,7 +173,13 @@ public:
      * @return The Gaussian as string
      */
 	std::string toString(const std::string& indent = "") const;
-
+        
+      // virtual std::shared_ptr< PDF > CloneImplementation() const override;
+         
+// virtual std::shared_ptr< PDF > CloneImplementation() const override {
+//         std::cout << "Derived::CloneImplementation\n";
+//         return std::shared_ptr< Gaussian >(new Gaussian(*this));
+//     }
 protected:
 
 	struct GaussianStruct {
@@ -157,14 +188,21 @@ protected:
 
 		Eigen::MatrixXd cov_;
 
-		int n_ptrs_;
+		//int n_ptrs_;
 
-		GaussianStruct(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : mu_(mu) , cov_(cov), n_ptrs_(1) { }
+		GaussianStruct(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : mu_(mu) , cov_(cov) { }
 
-		GaussianStruct(const GaussianStruct& orig) : mu_(orig.mu_), cov_(orig.cov_), n_ptrs_(1) { }
+		GaussianStruct(const GaussianStruct& orig) : mu_(orig.mu_), cov_(orig.cov_) { }
 	};
 
-	GaussianStruct* ptr_;
+        
+       /*  std::shared_ptr< PDF > CloneImplementation() const override {
+        std::cout << "Derived::CloneImplementation\n";
+        Gaussian* pG = new Gaussian(*this);
+        return std::shared_ptr< Gaussian >(pG);
+ }*/
+        
+	std::shared_ptr<GaussianStruct> ptr_;
 
 	void cloneStruct();
 

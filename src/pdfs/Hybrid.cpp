@@ -42,58 +42,59 @@ Hybrid::Hybrid() : PDF(-1, PDF::HYBRID), ptr_(0) {
 }
 
 Hybrid::Hybrid(const Hybrid& orig) : PDF(orig), ptr_(orig.ptr_) {
-    if (ptr_) {
-        ++ptr_->n_ptrs_;
-    }
+//     if (ptr_) {
+//         ++ptr_->n_ptrs_;
+//     }
 }
 
 Hybrid::~Hybrid() {
-	if (ptr_) {
-		--ptr_->n_ptrs_;
+// 	if (ptr_) {
+// 		--ptr_->n_ptrs_;
 
-		if (ptr_->n_ptrs_ == 0) {
-			delete ptr_;
-		}
-	}
+// 		if (ptr_->n_ptrs_ == 0) {
+// 			delete ptr_;
+// 		}
+// 	}
 }
 
 Hybrid& Hybrid::operator=(const Hybrid& other)  {
     if (this != &other)  {
-    	if (ptr_) {
-			--ptr_->n_ptrs_;
-			if (ptr_->n_ptrs_ == 0) {
-				delete ptr_;
-			}
-    	}
+//     	if (ptr_) {
+// 			--ptr_->n_ptrs_;
+// 			if (ptr_->n_ptrs_ == 0) {
+// 				delete ptr_;
+// 			}
+//     	}
     	ptr_ = other.ptr_;
-    	++ptr_->n_ptrs_;
+//     	++ptr_->n_ptrs_;
 
     	dimensions_ = other.dimensions_;
     }
     return *this;
 }
 
-Hybrid* Hybrid::clone() const {
-    return new Hybrid(*this);
-}
+/*std::shared_ptr<Hybrid> Hybrid::clone() const {
+        std::shared_ptr<Hybrid> p = std::make_shared<Hybrid>(*this);
+    return p;
+}*/
 
 void Hybrid::cloneStruct() {
-	if (ptr_->n_ptrs_ > 1) {
-		--ptr_->n_ptrs_;
-        ptr_ = new HybridStruct(*ptr_);
+	if (ptr_.use_count() > 1) {
+// 		--ptr_->n_ptrs_;
+        ptr_ = std::make_shared<HybridStruct>(*ptr_);
 	}
 }
 
-double Hybrid::getLikelihood(const PDF& pdf) const {
+double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const {
     assert_msg(false, "Likelihood method not implemented. Please create a subclass of Hybrid and implement your own method.");
 }
 
 void Hybrid::clear() {
 	if (ptr_) {
-		--ptr_->n_ptrs_;
-		if (ptr_->n_ptrs_ == 0) {
-			delete ptr_;
-		}
+// 		--ptr_->n_ptrs_;
+// 		if (ptr_->n_ptrs_ == 0) {
+// 			delete ptr_;
+// 		}
 		ptr_ = 0;
 	}
 }
@@ -111,7 +112,7 @@ void Hybrid::addPDF(const PDF& pdf, double priority) {
 	}
 
 	if (!ptr_) {
-        ptr_ = new HybridStruct();
+        ptr_ = std::make_shared<HybridStruct>();
 	} else {
 		cloneStruct();
 	}
@@ -119,7 +120,7 @@ void Hybrid::addPDF(const PDF& pdf, double priority) {
     ptr_->pdfs_.push_back(pdf.clone());
 }
 
-const std::vector<PDF*>& Hybrid::getPDFS() const {
+const std::vector<std::shared_ptr<PDF>>& Hybrid::getPDFS() const {
     assert_msg(ptr_, "Hybrid does not contain pdfs.");
     return ptr_->pdfs_;
 }
@@ -133,7 +134,7 @@ std::string Hybrid::toString(const std::string& indent) const {
 
 	std::stringstream ss;
     ss << "HYBRID{\n";
-    for (std::vector<PDF*>::const_iterator it_pdf = ptr_->pdfs_.begin(); it_pdf != ptr_->pdfs_.end(); ++it_pdf) {
+    for (std::vector<std::shared_ptr<PDF>>::const_iterator it_pdf = ptr_->pdfs_.begin(); it_pdf != ptr_->pdfs_.end(); ++it_pdf) {
         ss << new_indent << (*it_pdf)->toString(new_indent) << "\n";
 	}
 	ss << indent << "}";

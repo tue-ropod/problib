@@ -46,7 +46,9 @@ Uniform::Uniform(int dim, double density) : PDF(dim, PDF::UNIFORM), uniform_prob
 }
 
 Uniform::Uniform(pbl::Vector mean, pbl::Vector size) : PDF(mean.size(), PDF::UNIFORM), mean_(mean), size_(size), size_is_set_(true) {
+        std::cout << "Construct Uniform " << std::endl;
     calculateUniformDensity();
+        std::cout << "End of Construct Uniform " << std::endl;
 }
 
 Uniform::Uniform(const Uniform& orig) : PDF(orig), mean_(orig.mean_), size_(orig.size_),
@@ -67,22 +69,23 @@ Uniform& Uniform::operator=(const Uniform& other) {
     return *this;
 }
 
-Uniform* Uniform::clone() const {
-	return new Uniform(*this);
-}
+/*std::shared_ptr<Uniform> Uniform::clone() const {
+        std::shared_ptr p = std::make_shared<Uniform>(*this);
+	return p;
+}*/
 
-double Uniform::getLikelihood(const PDF& pdf) const {
+double Uniform::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 	//assert_msg(false, "Uniform PDF: getLikelihood(PDF) is currently not implemented");
 
-    assert(dimensions() == pdf.dimensions());
+    assert(dimensions() == pdf->dimensions());
 
     if (size_is_set_) {
 
         Eigen::VectorXd my_min = mean_ - size_ / 2;
         Eigen::VectorXd my_max = mean_ + size_ / 2;
 
-        if (pdf.type() == PDF::UNIFORM) {
-            const Uniform* U = PDFtoUniform(pdf);
+        if (pdf->type() == PDF::UNIFORM) {
+            std::shared_ptr<const Uniform> U = pbl::PDFtoUniform(pdf);
 
             Eigen::VectorXd other_min = U->mean_ - U->size_ / 2;
             Eigen::VectorXd other_max = U->mean_ + U->size_ / 2;
@@ -97,12 +100,15 @@ double Uniform::getLikelihood(const PDF& pdf) const {
             }
 
             return overlapping_volume * uniform_probability_ * U->uniform_probability_;
-        } else if (pdf.type() == PDF::HYBRID) {
-            return pdf.getLikelihood(*this);
+        } else if (pdf->type() == PDF::HYBRID) {
+                
+               std::shared_ptr<const Uniform> test = shared_from_this();
+
+            return pdf->getLikelihood(test);
         } else {
             Eigen::VectorXd other_mean;
-            if (!pdf.getExpectedValue(other_mean)) {
-                std::cout << pdf.toString() << std::endl;
+            if (!pdf->getExpectedValue(other_mean)) {
+                std::cout << pdf->toString() << std::endl;
                 assert_msg(false, "Uniform likelihood calculation: cannot determine expected value of pdf.");
                 return 0;
             }
@@ -143,12 +149,21 @@ void Uniform::setSize(const pbl::Vector size) {
 }
 
 void Uniform::calculateUniformDensity() {
+        std::cout << "calculateUniformDensity" << std::endl;
     double volume = 1;
+      std::cout << "calculateUniformDensity 1" << std::endl;
+    
     for(unsigned int i = 0; i < size_.size(); ++i) {
         volume *= size_(i);
     }
+      std::cout << "calculateUniformDensity2" << std::endl;
+    
     uniform_probability_ = 1.0 / volume;
+      std::cout << "calculateUniformDensity3" << std::endl;
+    
     size_is_set_ = true;
+      std::cout << "End of calculateUniformDensity" << std::endl;
+    
 }
 
 std::string Uniform::toString(const std::string& indent) const {

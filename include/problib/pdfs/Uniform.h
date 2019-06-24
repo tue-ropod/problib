@@ -48,7 +48,7 @@ namespace pbl {
  *
  * @brief This class represents a hyper-cube shaped uniform distribution
  */
-class Uniform: public PDF {
+class Uniform: public PDF, public std::enable_shared_from_this<Uniform> {
 
 public:
 
@@ -99,9 +99,13 @@ public:
      * copies a pointer. A deep clone will only be created if the original
      * object is modified.
      */
-	Uniform* clone() const;
+    //std::shared_ptr<Uniform> clone() const;
 
-	double getLikelihood(const PDF& pdf) const;
+           std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
+   
+    std::shared_ptr<Uniform> CloneMethod() const {return std::make_shared< Uniform>(*this);}
+    
+	double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
     /**
      * @brief Sets the density of the uniform distribution

@@ -86,9 +86,19 @@ public:
      * copies a pointer. A deep clone will only be created if the original
      * object is modified.
      */
-	Mixture* clone() const;
-
-	double getLikelihood(const PDF& pdf) const;
+    //Mixture* clone() const;
+    //std::shared_ptr<Mixture> clone() const;
+   
+       std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
+   
+    std::shared_ptr<Mixture> CloneMethod() const {return std::make_shared< Mixture>(*this);}
+   
+    /*std::shared_ptr< Mixture > Clone() const {
+        std::cout << "Derived::Clone\n";
+        return std::static_pointer_cast< Mixture >(CloneImplementation());
+    }
+*/
+	double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
     /**
      * @brief Removes all components
@@ -145,32 +155,39 @@ protected:
 
 		int num_components_;
 
-		std::vector<PDF*> components_;
+		std::vector<std::shared_ptr<PDF>> components_;
 
 		std::vector<double> weights_;
 
 		double weights_total_;
 
-		int n_ptrs_;
+// 		int n_ptrs_;
 
-		MixtureStruct() : num_components_(0) , weights_total_(0), n_ptrs_(1) { }
+		MixtureStruct() : num_components_(0) , weights_total_(0) { }
 
 		MixtureStruct(const MixtureStruct& orig) : num_components_(orig.num_components_), weights_(orig.weights_),
-				weights_total_(orig.weights_total_), n_ptrs_(1) {
+				weights_total_(orig.weights_total_) {
 
-			for (std::vector<PDF*>::const_iterator it_pdf = orig.components_.begin(); it_pdf != orig.components_.end(); ++it_pdf) {
-				components_.push_back((*it_pdf)->clone());
+			//for (std::vector<PDF*>::const_iterator it_pdf = orig.components_.begin(); it_pdf != orig.components_.end(); ++it_pdf) {
+                        for ( std::vector< std::shared_ptr< PDF > >::const_iterator it_pdf = orig.components_.begin(); it_pdf != orig.components_.end(); ++it_pdf) {
+				//components_.push_back((*it_pdf)->clone());
 			}
 		}
 
 		~MixtureStruct() {
-			for (std::vector<PDF*>::const_iterator it_pdf = components_.begin(); it_pdf != components_.end(); ++it_pdf) {
+			/*for (std::vector<PDF*>::const_iterator it_pdf = components_.begin(); it_pdf != components_.end(); ++it_pdf) {
 				delete *it_pdf;
 			}
+			*/
 		}
 	};
-
-	MixtureStruct* ptr_;
+        
+     /*    virtual std::shared_ptr< PDF > CloneImplementation() const override {
+        std::cout << "Derived::CloneImplementation\n";
+        return std::shared_ptr< Mixture >(new Mixture(*this));
+    }
+*/
+	std::shared_ptr<MixtureStruct> ptr_;
 
 	void cloneStruct();
 

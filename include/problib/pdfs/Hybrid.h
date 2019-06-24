@@ -24,9 +24,14 @@ public:
 
     Hybrid& operator=(const Hybrid& other);
 
-    Hybrid* clone() const;
+    //std::shared_ptr<Hybrid> clone() const;
+    
+    std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
+   
+    std::shared_ptr<Hybrid> CloneMethod() const {return std::make_shared< Hybrid>(*this);}
+    
 
-    virtual double getLikelihood(const PDF& pdf) const;
+    virtual double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
 	void clear();
 
@@ -34,7 +39,7 @@ public:
 
     void addPDF(const PDF& pdf, double priority);
 
-    const std::vector<PDF*>& getPDFS() const;
+    const std::vector<std::shared_ptr<PDF>>& getPDFS() const;
 
 	std::string toString(const std::string& indent = "") const;
 
@@ -42,27 +47,29 @@ protected:
 
     struct HybridStruct {
 
-        std::vector<PDF*> pdfs_;
+        std::vector<std::shared_ptr<PDF>> pdfs_;
 
-		int n_ptrs_;
+	//	int n_ptrs_;
 
-        HybridStruct() : n_ptrs_(1) { }
+        HybridStruct() { }
 
-        HybridStruct(const HybridStruct& orig) : n_ptrs_(1) {
+        HybridStruct(const HybridStruct& orig) {
 
-            for (std::vector<PDF*>::const_iterator it_pdf = orig.pdfs_.begin(); it_pdf != orig.pdfs_.end(); ++it_pdf) {
+            //for (std::vector<PDF*>::const_iterator it_pdf = orig.pdfs_.begin(); it_pdf != orig.pdfs_.end(); ++it_pdf) {
+                for (std::vector< std::shared_ptr<PDF>>::const_iterator it_pdf = orig.pdfs_.begin(); it_pdf != orig.pdfs_.end(); ++it_pdf) {
                 pdfs_.push_back((*it_pdf)->clone());
 			}
 		}
 
         ~HybridStruct() {
-            for (std::vector<PDF*>::const_iterator it_pdf = pdfs_.begin(); it_pdf != pdfs_.end(); ++it_pdf) {
+           /* for (std::vector<PDF*>::const_iterator it_pdf = pdfs_.begin(); it_pdf != pdfs_.end(); ++it_pdf) {
 				delete *it_pdf;
 			}
+			*/
 		}
 	};
 
-    HybridStruct* ptr_;
+    std::shared_ptr<HybridStruct> ptr_;
 
 	void cloneStruct();
 
