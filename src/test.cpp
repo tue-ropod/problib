@@ -119,19 +119,20 @@ void test() {
 
 	Vector3 mean1(0, 0, 0);
 	Matrix3 var1(1, 1, 1);
-	Gaussian pdf1(mean1, var1);
+	std::shared_ptr<Gaussian> pdf1 = std::make_shared<Gaussian> (mean1, var1);
 
 	Vector3 mean2(1, 1, 1);
 	Matrix3 var2(0.1, 0.1, 0.1);
-	Gaussian pdf2(mean2, var2);
+	std::shared_ptr<Gaussian> pdf2 =  std::make_shared<Gaussian>(mean2, var2);
 
 	Vector3 mean3(0.3, 2, -0.7);
 	Matrix3 var3(0.2, 0.1, 0.4);
-	Gaussian pdf3(mean3, var3);
+        std::shared_ptr<Gaussian> pdf3 =  std::make_shared<Gaussian>(mean3, var3);
 
-	Mixture mix;
-	mix.addComponent(pdf1, 0.7);
-	mix.addComponent(pdf2, 0.3);
+	//Mixture mix;
+         std::shared_ptr<Mixture> mix =  std::make_shared<Mixture>();
+	mix->addComponent(pdf1, 0.7);
+	mix->addComponent(pdf2, 0.3);
 
 	//Mixture mix2;
         std::shared_ptr<Mixture> mix2 = std::make_shared<Mixture>();

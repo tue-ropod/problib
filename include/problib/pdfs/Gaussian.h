@@ -110,6 +110,11 @@ public:
             
             return G;
 }
+
+    std::shared_ptr<Gaussian> cloneThis() const {             
+            return std::make_shared< Gaussian>(*this);
+}
+   
     
     /*  std::shared_ptr< Gaussian > Clone() const {
         std::cout << "Derived::Clone\n";

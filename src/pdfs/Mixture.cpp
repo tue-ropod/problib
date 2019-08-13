@@ -127,11 +127,11 @@ int Mixture::components() const {
 	return ptr_->num_components_;
 }
 
-void Mixture::addComponent(const PDF& pdf, double w) {
+void Mixture::addComponent(std::shared_ptr<const PDF> pdf, double w) {
 	if (dimensions_ < 0) {
-		dimensions_ = pdf.dimensions();
+		dimensions_ = pdf->dimensions();
 	} else {
-		assert(dimensions_ == pdf.dimensions());
+		assert(dimensions_ == pdf->dimensions());
 	}
 
 	if (!ptr_) {
@@ -140,15 +140,15 @@ void Mixture::addComponent(const PDF& pdf, double w) {
 		cloneStruct();
 	}
 
-	ptr_->components_.push_back(pdf.clone());
+	ptr_->components_.push_back(pdf->clone());
 	ptr_->weights_.push_back(w);
 	ptr_->weights_total_ += w;
 	++ptr_->num_components_;
 }
 
-const PDF& Mixture::getComponent(int i) const {
+std::shared_ptr<const PDF> Mixture::getComponent(int i) const {
 	assert_msg(ptr_, "Mixture does not contain components.");
-	return *(ptr_->components_[i]);
+	return (ptr_->components_[i]);
 }
 
 double Mixture::getWeight(int i) const {

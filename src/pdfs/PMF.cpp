@@ -212,6 +212,14 @@ double PMF::getLikelihood(std::shared_ptr<const PMF> other) const {
  * @todo: make this implementation more efficient (no need for O(log n) look-ups)
  */
 void PMF::update(std::shared_ptr<const pbl::PMF> other) {
+        
+       std::cout << " other->ptr_ =  " << other->ptr_ << std::endl;
+        
+        std::cout << " this->ptr_ = " << this->ptr_ << " other->ptr_ =  " << other->ptr_ << std::endl;
+        
+        std::cout << " this->ptr_->domain_size = " << this->ptr_->domain_size_ << " other->ptr_->domain_size_ =  " << other->ptr_->domain_size_ << std::endl;
+        
+        
     assert(this->ptr_->domain_size_ == -1 || other->ptr_->domain_size_ == -1
     		|| this->ptr_->domain_size_ == other->ptr_->domain_size_);
 

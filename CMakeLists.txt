@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(problib)
 
-#set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Debug")
 
 #set (CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_FLAGS -std=c++11)

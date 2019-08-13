@@ -121,14 +121,14 @@ public:
      * @param pdf The component pdf
      * @param w Weight of the component
      */
-	void addComponent(const PDF& pdf, double w);
+	void addComponent(std::shared_ptr<const PDF> pdf, double w);
 
     /**
      * @brief Returns a reference to the i'th component
      * @param i Index of the component
      * @return A reference to the i'th component
      */
-	const PDF& getComponent(int i) const;
+	std::shared_ptr<const PDF> getComponent(int i) const;
 
     /**
      * @brief Returns the weight of the i'th component

@@ -94,7 +94,7 @@ std::shared_ptr<Mixture> msgToMixture(const problib::PDF& msg);
  * @return Pointer to the PDF object if conversion was successful
  * (only if the message represents a PMF); 0 otherwise
  */
-std::shared_ptr<PMF> msgToPMF(const problib::PDF& msg);
+std::shared_ptr<PMF> msgToPMF(const problib::PDF msg);
 
 /**
  * @brief Casts a PDF object to a Gaussian if the PDF represents a Gaussian
@@ -121,7 +121,7 @@ std::shared_ptr<const Uniform> PDFtoUniform(std::shared_ptr<const PDF> pdf);
  * @param msg The PDF object
  * @return Pointer to the PDF object if casting was successful; 0 otherwise
  */
-std::shared_ptr<const PMF> PDFtoPMF(std::shared_ptr<const PDF>& pdf);
+std::shared_ptr<const PMF> PDFtoPMF(std::shared_ptr<const PDF> pdf);
 
 /* * * * * * * OTHER * * * * * * */
 

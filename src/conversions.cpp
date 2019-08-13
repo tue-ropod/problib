@@ -68,7 +68,7 @@ std::shared_ptr<Gaussian> msgToGaussian(const problib::PDF& msg) {
 	return 0;
 }
 
-std::shared_ptr<Mixture> msgToMixture(const problib::PDF& msg) {
+std::shared_ptr<Mixture> msgToMixture(const problib::PDF msg) {
 	int i_data = 1;
 	if (msg.type == problib::PDF::MIXTURE) {
 		return deserialize_mixture(msg, i_data);
@@ -235,8 +235,8 @@ void serialize_mixture(const Mixture& mix, problib::PDF& msg) {
 	// add weights and components themselves
 	for(int i = 0; i < mix.components(); ++i) {
 		msg.data.push_back(mix.getWeight(i));
-		const PDF& pdf = mix.getComponent(i);
-		serialize(pdf, msg);
+		std::shared_ptr<const PDF> pdf = mix.getComponent(i);
+		serialize(*pdf, msg);
 	}
 }
 
@@ -250,7 +250,7 @@ std::shared_ptr<Mixture> deserialize_mixture(const problib::PDF& msg, int& i_dat
 		int type = (int)msg.data[i_data++];
 
 		std::shared_ptr<PDF> component = deserialize(msg, type, i_data);
-		mix->addComponent(*component, w);
+		mix->addComponent(component, w);
 		//delete component;
 	}
 
