@@ -90,7 +90,9 @@ public:
 
 	       std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
    
-    std::shared_ptr<PMF> CloneMethod() const {return std::make_shared< PMF>(*this);}
+    std::shared_ptr<PMF> CloneMethod() const {
+            //std::cout << "CLONING" << std::endl;
+            return std::make_shared< PMF>(*this);}
 	
     /**
      * @brief Returns the probability of the given value

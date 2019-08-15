@@ -103,7 +103,9 @@ public:
 
            std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
    
-    std::shared_ptr<Uniform> CloneMethod() const {return std::make_shared< Uniform>(*this);}
+    std::shared_ptr<Uniform> CloneMethod() const {
+            //std::cout << "CLONING" << std::endl;
+            return std::make_shared< Uniform>(*this);}
     
 	double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 

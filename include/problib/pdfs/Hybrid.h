@@ -28,7 +28,9 @@ public:
     
     std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
    
-    std::shared_ptr<Hybrid> CloneMethod() const {return std::make_shared< Hybrid>(*this);}
+    std::shared_ptr<Hybrid> CloneMethod() const {
+            //std::cout << "CLONING" << std::endl;
+            return std::make_shared< Hybrid>(*this);}
     
 
     virtual double getLikelihood(std::shared_ptr<const PDF> pdf) const;

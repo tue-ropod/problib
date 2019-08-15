@@ -104,7 +104,7 @@ public:
     std::shared_ptr<Gaussian> CloneMethod() const { 
             
       //      Gaussian* Gtest = new Gaussian(*this);
-
+//std::cout << "CLONING" << std::endl;
             
             std::shared_ptr<Gaussian> G = std::make_shared< Gaussian>(*this);
             

@@ -91,7 +91,9 @@ public:
    
        std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
    
-    std::shared_ptr<Mixture> CloneMethod() const {return std::make_shared< Mixture>(*this);}
+    std::shared_ptr<Mixture> CloneMethod() const {
+            std::cout << "CLONING" << std::endl;
+            return std::make_shared< Mixture>(*this);}
    
     /*std::shared_ptr< Mixture > Clone() const {
         std::cout << "Derived::Clone\n";

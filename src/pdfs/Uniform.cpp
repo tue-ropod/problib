@@ -46,9 +46,9 @@ Uniform::Uniform(int dim, double density) : PDF(dim, PDF::UNIFORM), uniform_prob
 }
 
 Uniform::Uniform(pbl::Vector mean, pbl::Vector size) : PDF(mean.size(), PDF::UNIFORM), mean_(mean), size_(size), size_is_set_(true) {
-        std::cout << "Construct Uniform " << std::endl;
+//         std::cout << "Construct Uniform " << std::endl;
     calculateUniformDensity();
-        std::cout << "End of Construct Uniform " << std::endl;
+//         std::cout << "End of Construct Uniform " << std::endl;
 }
 
 Uniform::Uniform(const Uniform& orig) : PDF(orig), mean_(orig.mean_), size_(orig.size_),
@@ -149,20 +149,20 @@ void Uniform::setSize(const pbl::Vector size) {
 }
 
 void Uniform::calculateUniformDensity() {
-        std::cout << "calculateUniformDensity" << std::endl;
+//         std::cout << "calculateUniformDensity" << std::endl;
     double volume = 1;
-      std::cout << "calculateUniformDensity 1" << std::endl;
+//       std::cout << "calculateUniformDensity 1" << std::endl;
     
     for(unsigned int i = 0; i < size_.size(); ++i) {
         volume *= size_(i);
     }
-      std::cout << "calculateUniformDensity2" << std::endl;
+//       std::cout << "calculateUniformDensity2" << std::endl;
     
     uniform_probability_ = 1.0 / volume;
-      std::cout << "calculateUniformDensity3" << std::endl;
+//       std::cout << "calculateUniformDensity3" << std::endl;
     
     size_is_set_ = true;
-      std::cout << "End of calculateUniformDensity" << std::endl;
+//       std::cout << "End of calculateUniformDensity" << std::endl;
     
 }
 
