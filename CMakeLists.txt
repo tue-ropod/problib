@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(problib)
 
-set(CMAKE_BUILD_TYPE "Debug")
+#set(CMAKE_BUILD_TYPE "Debug")
 
 #set (CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_FLAGS -std=c++11)
@@ -17,6 +17,7 @@ endif()
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  armadillo_matrix
   roscpp
   genmsg
 )
@@ -54,7 +55,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES problib
-  CATKIN_DEPENDS message_runtime #armadillo
+  CATKIN_DEPENDS message_runtime armadillo_matrix
 #  DEPENDS system_lib
 )
 

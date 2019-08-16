@@ -194,12 +194,14 @@ void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg) {
 	msg.type = problib::PDF::GAUSSIAN;
 	msg.data.push_back(msg.type);
 
-	const Eigen::VectorXd& mu = gauss.getMean();
+	//const Eigen::VectorXd& mu = gauss.getMean();
+        const arma::vec& mu = gauss.getMean();
 	for(int i = 0; i < dimensions; ++i) {
 		msg.data.push_back(mu(i));
 	}
 
-	const Eigen::MatrixXd& cov = gauss.getCovariance();
+	//const Eigen::MatrixXd& cov = gauss.getCovariance();
+        const arma::mat& cov = gauss.getCovariance();
 	for(int i = 0; i < dimensions; ++i) {
 		for(int j = i; j < dimensions; ++j) {
 			msg.data.push_back(cov(i, j));
@@ -208,12 +210,15 @@ void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg) {
 }
 
 std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data) {
-	Eigen::VectorXd mu(msg.dimensions);
+	//Eigen::VectorXd mu(msg.dimensions);
+        arma::vec mu(msg.dimensions);
+        
 	for(unsigned int i = 0; i < msg.dimensions; ++i) {
 		mu(i) = msg.data[i_data++];
 	}
 
-	Eigen::MatrixXd cov(msg.dimensions, msg.dimensions);
+	//Eigen::MatrixXd cov(msg.dimensions, msg.dimensions);
+        arma::mat cov(msg.dimensions, msg.dimensions);
 	for(unsigned int i = 0; i < msg.dimensions; ++i) {
 		for(unsigned int j = i; j < msg.dimensions; ++j) {
 			cov(i, j) = msg.data[i_data];
@@ -329,12 +334,16 @@ std::shared_ptr<PDF> deserialize_exact(const problib::PDF& msg) {
 	if (!msg.exact_value_vec.empty()) {
 		// vector value, so we ASSUME continuous
 		unsigned int dim = msg.exact_value_vec.size();
-		Eigen::VectorXd mu(dim);
+		//Eigen::VectorXd mu(dim);
+                
+                arma::vec mu(dim);
 		for(unsigned int i = 0; i < dim; ++i) {
 			mu(i) = msg.exact_value_vec[i];
 		}
-		Eigen::MatrixXd cov;
-		cov.setZero(dim,dim);
+		//Eigen::MatrixXd cov;
+		//cov.setZero(dim,dim);
+		arma::mat cov = arma::zeros(dim, dim);
+		
 		
 		return std::make_shared<Gaussian>(mu, cov);
 	} else if (msg.exact_value_str != "") {

@@ -122,7 +122,8 @@ public:
      * @param v The point to calculate the density for
      * @return The density of the distribution at point v
      */
-	double getDensity(const Eigen::VectorXd& vec) const;
+//	double getDensity(const Eigen::VectorXd& vec) const;
+double getDensity(const arma::vec& vec) const;
 
     /**
      * @brief Returns the maximum density of this distribution, which always equals 1 / volume

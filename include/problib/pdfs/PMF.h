@@ -161,7 +161,9 @@ public:
      */
 	std::string toString(const std::string& indent = "") const;
 
-	double getDensity(const Eigen::VectorXd& v) const;
+	//double getDensity(const Eigen::VectorXd& v) const;
+                double getDensity(const arma::vec& v) const;
+
 
 	double getMaxDensity() const;
 

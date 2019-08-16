@@ -37,18 +37,23 @@
 #ifndef PROBLIB_DATATYPES_H_
 #define PROBLIB_DATATYPES_H_
 
-//#define ARMA_DONT_USE_WRAPPER
-//#include <armadillo>
+#define ARMA_DONT_USE_WRAPPER
+#include <armadillo>
 
-#include <eigen3/Eigen/Dense>
+//#include <eigen3/Eigen/Dense>
 
 namespace pbl {
   
-typedef Eigen::VectorXd Vector;
+//typedef Eigen::VectorXd Vector;
 
-typedef Eigen::MatrixXd Matrix;
+//typedef Eigen::MatrixXd Matrix;
+        
+typedef arma::vec Vector;
+typedef arma::mat Matrix;
+      
 
-class Scalar : public Eigen::Matrix<double, 1, 1> {
+//class Scalar : public Eigen::Matrix<double, 1, 1> {
+class Scalar : public arma::vec::fixed<1> {
 
 public:
     Scalar(double x) {
@@ -56,7 +61,8 @@ public:
     }
 };
 
-class Vector3 : public Eigen::Vector3d {
+//class Vector3 : public Eigen::Vector3d {
+class Vector3 : public arma::vec3 {
 
 public:
 	Vector3(double v0, double v1, double v2) {
@@ -78,7 +84,9 @@ public:
 //
 //};
 
-class Vector4 : public Eigen::Vector4d {
+//class Vector4 : public Eigen::Vector4d {
+class Vector4 : public arma::vec4 {
+
 
 public:
 	Vector4(double v0, double v1, double v2, double v3) {
@@ -90,22 +98,26 @@ public:
 
 };
 
-class Matrix3 : public Eigen::Matrix3d {
+//class Matrix3 : public Eigen::Matrix3d {
+class Matrix3 : public arma::mat33 {
 
 public:
 	Matrix3(double m00, double m11, double m22) {
-		this->setZero();
+		//this->setZero();
+                this->zeros();
 		(*this)(0, 0) = m00;
 		(*this)(1, 1) = m11;
 		(*this)(2, 2) = m22;
 	}
 };
 
-class Matrix4 : public Eigen::Matrix4d {
+//class Matrix4 : public Eigen::Matrix4d {
+class Matrix4 : public arma::mat44 {
 
 public:
 	Matrix4(double m00, double m11, double m22, double m33) {
-		this->setZero();
+		//this->setZero();
+                this->zeros();
 		(*this)(0, 0) = m00;
 		(*this)(1, 1) = m11;
 		(*this)(2, 2) = m22;

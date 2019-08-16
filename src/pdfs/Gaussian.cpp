@@ -42,14 +42,23 @@ using namespace pbl;
 //Gaussian::Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
 //}
 
+//Gaussian::Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
+//}
+
 //Gaussian::Gaussian(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : PDF(mu.size(), PDF::GAUSSIAN), ptr_(std::make_shared<GaussianStruct>(mu, cov)) {
 //}
 
- Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
+//Gaussian::Gaussian(const arma::vec& mu, const arma::mat& cov) : PDF(mu.n_elem, PDF::GAUSSIAN), ptr_(new GaussianStruct(mu, cov)) {
+//}
+Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
+}
+
+/* Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
 //     //if (ptr_) {
 //     //    ++ptr_->n_ptrs_;
 //     //}
  }
+ */
 
 Gaussian::~Gaussian() {
 	//if (ptr_) {
@@ -124,14 +133,16 @@ double Gaussian::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 	return 0;
 }
 
-double Gaussian::getDensity(const Eigen::VectorXd& v, double max_mah_dist) const {
+double Gaussian::getDensity(const arma::vec& v, double max_mah_dist) const {
+//double Gaussian::getDensity(const Eigen::VectorXd& v, double max_mah_dist) const {
 	CHECK_INITIALIZED
 	return getDensity(v, ptr_->mu_, ptr_->cov_, max_mah_dist);
 }
 
 double Gaussian::getDensity(const Gaussian& G, double max_mah_dist) const {
 	CHECK_INITIALIZED
-	Eigen::MatrixXd S = G.getCovariance() + ptr_->cov_;
+	//Eigen::MatrixXd S = G.getCovariance() + ptr_->cov_;
+        arma::mat S = G.getCovariance() + ptr_->cov_;
 	return getDensity(ptr_->mu_, G.getMean(), S);
 	
 }
@@ -141,17 +152,20 @@ double Gaussian::getMaxDensity() const {
 	return getDensity(ptr_->mu_, ptr_->mu_, ptr_->cov_);
 }
 
-bool Gaussian::getExpectedValue(Eigen::VectorXd& v) const {
+//bool Gaussian::getExpectedValue(Eigen::VectorXd& v) const {
+bool Gaussian::getExpectedValue(arma::vec& v) const {
 	CHECK_INITIALIZED
 	v = ptr_->mu_;
 	return true;
 }
 
-double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2, const Eigen::MatrixXd& S, double max_mah_dist) const {
+//double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2, const Eigen::MatrixXd& S, double max_mah_dist) const {
+double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma::mat& S, double max_mah_dist) const {
 	// check dimensions
-	assert(v1.size() == v2.size()  && v1.size()  == S.rows());
-
-	double det = S.determinant();
+	//assert(v1.size() == v2.size()  && v1.size()  == S.rows());
+        assert(v1.n_elem == v2.n_elem && v1.n_elem == S.n_rows);
+ double det = arma::det(S);
+	//double det = S.determinant();
 	// covariance should have non-zero determinant
         
 //         std::cout << "Gaussian: S = " << S << std::endl;
@@ -160,10 +174,12 @@ double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2
 	assert(det != 0);
 
 	// calculate difference between v1 and v2
-	Eigen::VectorXd diff = v2 - v1;
+	//Eigen::VectorXd diff = v2 - v1;
+        arma::vec diff = v2 - v1;
 
 	// calculate squared mahalanobis distance
-	double mahalanobis_dist_sq = diff.dot(S.inverse() * diff );
+	//double mahalanobis_dist_sq = diff.dot(S.inverse() * diff );
+        double mahalanobis_dist_sq = arma::dot(arma::inv(S) * diff, diff);
 	// mahalanobis distance should always be 0 or positive
         
        // std::cout << "mahalanobis_dist_sq = " << mahalanobis_dist_sq << " diff = " << diff << "S inverse =  " << S.inverse() << std::endl;
@@ -176,7 +192,8 @@ double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2
 	}
 
     double pi2_pow = 1;
-    for(unsigned int d = 0; d < S.rows(); ++d) {
+    //for(unsigned int d = 0; d < S.rows(); ++d) {
+    for(unsigned int d = 0; d < S.n_rows; ++d) {
         pi2_pow *= 2 * M_PI;
     }
 
@@ -185,35 +202,43 @@ double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2
 	return exp(-0.5 * mahalanobis_dist_sq) * pos_sqrt_pow;
 }
 
-void Gaussian::setMean(const Eigen::VectorXd& mu) {
+//void Gaussian::setMean(const Eigen::VectorXd& mu) {
+        
+void Gaussian::setMean(const arma::vec& mu) {
 	if (ptr_) {
 		cloneStruct();
 	} else {
-	  int nElements = mu.rows()*mu.cols();
-	  Eigen::MatrixXd newMatrix(nElements, nElements);
-	  ptr_ = std::make_shared<GaussianStruct>(mu, newMatrix.setZero());
+	  //int nElements = mu.rows()*mu.cols();
+	 // Eigen::MatrixXd newMatrix(nElements, nElements);
+	  //ptr_ = std::make_shared<GaussianStruct>(mu, newMatrix.setZero());
+          ptr_ = std::make_shared< GaussianStruct>(mu, arma::zeros(mu.n_elem, mu.n_elem));
+
 	}
 
 	ptr_->mu_ = mu;
 }
 
-void Gaussian::setCovariance(const Eigen::MatrixXd& cov) {
+//void Gaussian::setCovariance(const Eigen::MatrixXd& cov) {
+void Gaussian::setCovariance(const arma::mat& cov) {
 	if (ptr_) {
 		cloneStruct(); 
 	} else {
-	  Eigen::VectorXd newMatrix;
-		ptr_ = std::make_shared<GaussianStruct>(newMatrix.setZero(cov.cols()), cov);
+	 // Eigen::VectorXd newMatrix;
+	//	ptr_ = std::make_shared<GaussianStruct>(newMatrix.setZero(cov.cols()), cov);
+                ptr_ = std::make_shared< GaussianStruct>(arma::zeros(cov.n_cols), cov);
 	}
 
 	ptr_->cov_ = cov;
 }
 
-const Eigen::VectorXd& Gaussian::getMean() const {
+//const Eigen::VectorXd& Gaussian::getMean() const {
+const arma::vec& Gaussian::getMean() const {
 	CHECK_INITIALIZED
 	return ptr_->mu_;
 }
 
-const Eigen::MatrixXd& Gaussian::getCovariance() const {
+//const Eigen::MatrixXd& Gaussian::getCovariance() const {
+const arma::mat& Gaussian::getCovariance() const {
 	CHECK_INITIALIZED
 	return ptr_->cov_;
 }

@@ -79,7 +79,9 @@ public:
 
 	virtual bool getExpectedValue(std::string& v) const;
 
-	virtual bool getExpectedValue(Eigen::VectorXd& v) const;
+	//virtual bool getExpectedValue(Eigen::VectorXd& v) const;
+         virtual bool getExpectedValue(arma::vec& v) const;
+
 
 	//virtual double getLikelihood(const PDF& pdf) const = 0;
         

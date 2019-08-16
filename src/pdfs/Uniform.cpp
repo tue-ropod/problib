@@ -81,15 +81,21 @@ double Uniform::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 
     if (size_is_set_) {
 
-        Eigen::VectorXd my_min = mean_ - size_ / 2;
-        Eigen::VectorXd my_max = mean_ + size_ / 2;
+        //Eigen::VectorXd my_min = mean_ - size_ / 2;
+        //Eigen::VectorXd my_max = mean_ + size_ / 2;
 
+       arma::vec my_min = mean_ - size_ / 2;
+       arma::vec my_max = mean_ + size_ / 2;
+            
         if (pdf->type() == PDF::UNIFORM) {
             std::shared_ptr<const Uniform> U = pbl::PDFtoUniform(pdf);
 
-            Eigen::VectorXd other_min = U->mean_ - U->size_ / 2;
-            Eigen::VectorXd other_max = U->mean_ + U->size_ / 2;
+          //  Eigen::VectorXd other_min = U->mean_ - U->size_ / 2;
+          //  Eigen::VectorXd other_max = U->mean_ + U->size_ / 2;
 
+             arma::vec other_min = U->mean_ - U->size_ / 2;
+             arma::vec other_max = U->mean_ + U->size_ / 2;
+             
             double overlapping_volume = 1;
             for(int i = 0; i < dimensions(); ++i) {
                 double diff = std::min(my_max(i), other_max(i)) - std::max(my_min(i), other_min(i));
@@ -106,7 +112,9 @@ double Uniform::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 
             return pdf->getLikelihood(test);
         } else {
-            Eigen::VectorXd other_mean;
+           // Eigen::VectorXd other_mean;
+           arma::vec other_mean;
+
             if (!pdf->getExpectedValue(other_mean)) {
                 std::cout << pdf->toString() << std::endl;
                 assert_msg(false, "Uniform likelihood calculation: cannot determine expected value of pdf.");
@@ -131,7 +139,8 @@ void Uniform::setDensity(const double& density) {
     size_is_set_ = false;
 }
 
-double Uniform::getDensity(const Eigen::VectorXd& vec) const {
+//double Uniform::getDensity(const Eigen::VectorXd& vec) const {
+double Uniform::getDensity(const arma::vec& vec) const {
 	return uniform_probability_;
 }
 

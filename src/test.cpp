@@ -38,12 +38,14 @@
 #include "problib/conversions.h"
 #include "problib/datatypes.h"
 
+#include <armadillo>
+
 #include <iostream>
 
 #include <time.h>
 
 using namespace std;
-using namespace Eigen;
+using namespace arma;
 
 list<timespec> TIMERS;
 
