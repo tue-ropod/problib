@@ -40,6 +40,8 @@
 //#define ARMA_DONT_USE_WRAPPER
 //#include <armadillo>
 
+#define EIGEN_NO_DEBUG
+
 #include <eigen3/Eigen/Dense>
 
 namespace pbl {
