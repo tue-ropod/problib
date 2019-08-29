@@ -231,11 +231,11 @@ void test() {
 	startTimer();
 
 	double d2;
-	for(int i = 0; i < 10000; ++i) {
+	for(int i = 0; i < 1000000; ++i) {
 		d2 = mix2->getLikelihood(pdf_exact_real);
 	}
 
-	stopTimer("Likelihood on mixture", (double)1 / 10000);
+	stopTimer("Likelihood on mixture", (double)1 / 1000000);
 
 	cout << "Likelihood with mixture = " << mix2->getLikelihood(pdf_exact_real) << endl << endl;
 
@@ -254,7 +254,6 @@ void test() {
 	testOutput("Likelihood with mixture (copy)", d3, d2);
 	
 	//delete pdf_exact_real;
-	
 }
 
 int main(int argc, char **argv) {
