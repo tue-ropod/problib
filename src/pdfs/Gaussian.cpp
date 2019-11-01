@@ -42,14 +42,6 @@ using namespace pbl;
 //Gaussian::Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
 //}
 
-//Gaussian::Gaussian(int dim) : PDF(dim, PDF::GAUSSIAN), ptr_(0) {
-//}
-
-//Gaussian::Gaussian(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : PDF(mu.size(), PDF::GAUSSIAN), ptr_(std::make_shared<GaussianStruct>(mu, cov)) {
-//}
-
-//Gaussian::Gaussian(const arma::vec& mu, const arma::mat& cov) : PDF(mu.n_elem, PDF::GAUSSIAN), ptr_(new GaussianStruct(mu, cov)) {
-//}
 Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
 }
 
