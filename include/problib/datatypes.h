@@ -61,6 +61,16 @@ public:
     }
 };
 
+class Vector2 : public arma::vec2 {
+
+public:
+        Vector2(double v0, double v1) {
+                (*this)(0) = v0;
+                (*this)(1) = v1;
+        }
+
+};
+
 //class Vector3 : public Eigen::Vector3d {
 class Vector3 : public arma::vec3 {
 
