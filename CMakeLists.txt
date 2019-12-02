@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(problib)
 
 #set(CMAKE_BUILD_TYPE "Debug")
-
-#set (CMAKE_CXX_STANDARD 11)
-#set(CMAKE_CXX_FLAGS -std=c++11)
+set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11_FLAG)
@@ -22,19 +20,9 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
 )
 
-#find_package(Armadillo REQUIRED)
-#include_directories(${ARMADILLO_INCLUDE_DIRS})
-
-#find_package(liblapack)
-
-#find_package(BLAS)
-#find_package(LAPACK)
-#if(LAPACK_FOUND AND BLAS_FOUND)
-#   set(lapackblas_libraries ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-#endif()
-
-
-
+find_package(LAPACK)
+MESSAGE("Adding definition ARMA_USE_LAPACK...")
+ADD_DEFINITIONS(-DARMA_USE_LAPACK)
 
 # Generate messages in the 'msg' folder
 add_message_files(
@@ -55,7 +43,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES problib
-  CATKIN_DEPENDS message_runtime armadillo_matrix
+  CATKIN_DEPENDS message_runtime armadillo_matrix std_msgs
 #  DEPENDS system_lib
 )
 
@@ -65,12 +53,11 @@ catkin_package(
 
 include_directories(
         ${catkin_INCLUDE_DIRS}
-        ${ARMADILLO_INCLUDE_DIRS}
         include
+       # ${ARMADILLO_INCLUDE_DIRS}       
 )
 
 ########## feature extraction ###########
-
 add_library(problib
         src/pdfs/PDF.cpp
         src/pdfs/Gaussian.cpp
@@ -88,10 +75,10 @@ add_library(problib
         include/${PROJECT_NAME}/pdfs/Mixture.h
         include/${PROJECT_NAME}/pdfs/Hybrid.h
         include/${PROJECT_NAME}/pdfs/PMF.h)
-target_link_libraries(problib ${lapackblas_libraries} ${catkin_LIBRARIES} ${ARMADILLO_LIBRARIES})
+          
+target_link_libraries(problib ${catkin_LIBRARIES})
 add_dependencies(problib ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 
 # add test executable
 add_executable(problib_test src/test.cpp )
-target_link_libraries(problib_test problib ${ARMADILLO_LIBRARIES})
+target_link_libraries(problib_test problib)

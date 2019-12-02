@@ -9,6 +9,7 @@
 #define PROBLIB_HYBRIDPDF_H_
 
 #include "PDF.h"
+#include "problib/pdfs/Gaussian.h"
 
 namespace pbl {
 
@@ -21,6 +22,11 @@ public:
     Hybrid(const Hybrid& orig);
 
     virtual ~Hybrid();
+    
+    struct distributionStruct {
+         std::shared_ptr<PDF> pdf; 
+         double weight;       
+        };
 
     Hybrid& operator=(const Hybrid& other);
 
@@ -30,26 +36,28 @@ public:
    
     std::shared_ptr<Hybrid> CloneMethod() const {
             //std::cout << "CLONING" << std::endl;
-            return std::make_shared< Hybrid>(*this);}
-    
+    return std::make_shared< Hybrid>(*this);}
 
     virtual double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
-	void clear();
+    void clear();
 
-	double getMaxDensity() const;
+    double getMaxDensity() const;
 
     void addPDF(const PDF& pdf, double priority);
 
-    const std::vector<std::shared_ptr<PDF>>& getPDFS() const;
+    const std::vector<distributionStruct>& getPDFS() const;
 
-	std::string toString(const std::string& indent = "") const;
+    std::string toString(const std::string& indent = "") const;
 
-protected:
 
+        
+protected:        
     struct HybridStruct {
 
-        std::vector<std::shared_ptr<PDF>> pdfs_;
+        std::vector<distributionStruct> pdfDistribution_;
+        
+        std::vector<double> weights_;
 
 	//	int n_ptrs_;
 
@@ -58,8 +66,11 @@ protected:
         HybridStruct(const HybridStruct& orig) {
 
             //for (std::vector<PDF*>::const_iterator it_pdf = orig.pdfs_.begin(); it_pdf != orig.pdfs_.end(); ++it_pdf) {
-                for (std::vector< std::shared_ptr<PDF>>::const_iterator it_pdf = orig.pdfs_.begin(); it_pdf != orig.pdfs_.end(); ++it_pdf) {
-                pdfs_.push_back((*it_pdf)->clone());
+                for (std::vector< distributionStruct>::const_iterator it_pdf = orig.pdfDistribution_.begin(); it_pdf != orig.pdfDistribution_.end(); ++it_pdf) {
+                        distributionStruct dist;
+                        dist.pdf = it_pdf->pdf->clone();
+                        dist.weight = it_pdf->weight;
+                        pdfDistribution_.push_back(dist);
 			}
 		}
 
@@ -70,6 +81,8 @@ protected:
 			*/
 		}
 	};
+        
+       
 
     std::shared_ptr<HybridStruct> ptr_;
 

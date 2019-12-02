@@ -39,7 +39,7 @@
 namespace pbl {
 
 void PDFtoMsg(const PDF& pdf, problib::PDF& msg) {
-	msg.dimensions = pdf.dimensions();
+	//msg.dimensions.push_back(pdf.dimensions());
 	serialize(pdf, msg);
 
 	if (pdf.type() == PDF::DISCRETE) {
@@ -62,6 +62,9 @@ std::shared_ptr<PDF> msgToPDF(const problib::PDF& msg) {
 
 std::shared_ptr<Gaussian> msgToGaussian(const problib::PDF& msg) {
 	int i_data = 1;
+        
+//         std::cout << "msgToGaussian called" << std::endl;
+        
 	if (msg.type == problib::PDF::GAUSSIAN) {
 		return deserialize_gaussian(msg, i_data);
 	}
@@ -100,8 +103,16 @@ std::shared_ptr<const Gaussian> PDFtoGaussian(std::shared_ptr<const PDF> pdf) {
 	}
 
 	std::shared_ptr<const Gaussian> G = std::static_pointer_cast<const Gaussian>(pdf);
-       // const Gaussian* G = static_cast<const Gaussian*>(&pdf);
 	return G;
+}
+
+std::shared_ptr<const Hybrid> PDFtoHybrid(std::shared_ptr<const PDF> pdf) {
+        if (pdf->type() != PDF::HYBRID) {
+                return 0;
+        }
+
+        std::shared_ptr<const Hybrid> H = std::static_pointer_cast<const Hybrid>(pdf);
+        return H;
 }
 
 std::shared_ptr<const Uniform> PDFtoUniform(std::shared_ptr<const PDF> pdf) {
@@ -119,17 +130,6 @@ std::shared_ptr<const PMF> PDFtoPMF(std::shared_ptr<const PDF> pdf) {
 	
 	std::shared_ptr<const PMF> P = std::static_pointer_cast<const PMF>(pdf);
 	return P;
-}
-
-std::shared_ptr<const Hybrid> PDFtoHybrid(std::shared_ptr<const PDF> pdf) {
-    if (pdf->type() != PDF::HYBRID) {
-        return 0;
-    }
-    
-    std::shared_ptr<const Hybrid> H = std::static_pointer_cast<const Hybrid>(pdf);
-        return H;
-    
-    //return static_cast<std::shared_ptr<const Hybrid>>(&pdf);
 }
 
 std::string typeToName(PDF::PDFType type) {
@@ -168,13 +168,15 @@ void serialize(const PDF& pdf, problib::PDF& msg) {
     }
 }
 
-std::shared_ptr<PDF> deserialize(const problib::PDF& msg, int type, int& i_data) {
+std::shared_ptr<PDF> deserialize(const problib::PDF& msg, int type, int& i_data, int i_dimensions) {
+//         std::cout << "deserialize PDF: i_dimensions = " << i_dimensions << std::endl;
+        
 	if (type == problib::PDF::MIXTURE) {
 		return deserialize_mixture(msg, i_data);
 	} else if (type == problib::PDF::GAUSSIAN) {
-		return deserialize_gaussian(msg, i_data);
+		return deserialize_gaussian(msg, i_data, i_dimensions);
 	} else if (type == problib::PDF::UNIFORM) {
-		return deserialize_uniform(msg, i_data);
+		return deserialize_uniform(msg, i_data, i_dimensions);
 	} else if (type == problib::PDF::DISCRETE) {
 		return deserialize_discrete(msg);
 	} else if (type == problib::PDF::EXACT) {
@@ -193,6 +195,9 @@ void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg) {
 
 	msg.type = problib::PDF::GAUSSIAN;
 	msg.data.push_back(msg.type);
+        
+        msg.dimensions.push_back(dimensions);
+//         std::cout << "serialize_gaussian: dimensions added. dimensions = " << dimensions << std::endl;
 
 	//const Eigen::VectorXd& mu = gauss.getMean();
         const arma::vec& mu = gauss.getMean();
@@ -209,18 +214,19 @@ void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg) {
 	}
 }
 
-std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data) {
+std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data, int i_dimensions) {
+//         std::cout << "deserialize_gaussian: i_dimensions = " << i_dimensions << std::endl;
 	//Eigen::VectorXd mu(msg.dimensions);
-        arma::vec mu(msg.dimensions);
-        
-	for(unsigned int i = 0; i < msg.dimensions; ++i) {
+        arma::vec mu(msg.dimensions[i_dimensions]);
+//         std::cout << "deserialize_gaussian: dim = " << msg.dimensions[i_dimensions] << std::endl;
+	for(unsigned int i = 0; i < msg.dimensions[i_dimensions]; ++i) {
 		mu(i) = msg.data[i_data++];
 	}
 
 	//Eigen::MatrixXd cov(msg.dimensions, msg.dimensions);
-        arma::mat cov(msg.dimensions, msg.dimensions);
-	for(unsigned int i = 0; i < msg.dimensions; ++i) {
-		for(unsigned int j = i; j < msg.dimensions; ++j) {
+        arma::mat cov(msg.dimensions[i_dimensions], msg.dimensions[i_dimensions]);
+	for(unsigned int i = 0; i < msg.dimensions[i_dimensions]; ++i) {
+		for(unsigned int j = i; j < msg.dimensions[i_dimensions]; ++j) {
 			cov(i, j) = msg.data[i_data];
 			cov(j, i) = msg.data[i_data];
 			++i_data;
@@ -249,12 +255,18 @@ std::shared_ptr<Mixture> deserialize_mixture(const problib::PDF& msg, int& i_dat
 	std::shared_ptr<Mixture> mix = std::make_shared<Mixture>();
 
 	int num_components = (int)msg.data[i_data++];
-
+        
+//   std::cout << "deserialize_mixture: num_components = " << num_components << std::endl;
+  
 	for(int c = 0; c < num_components; ++c) {
 		double w = msg.data[i_data++];
 		int type = (int)msg.data[i_data++];
+                //int dimension = msg.dimensions[c];
 
-		std::shared_ptr<PDF> component = deserialize(msg, type, i_data);
+		std::shared_ptr<PDF> component = deserialize(msg, type, i_data, c);
+                
+                std::cout << "deseriali/*z*/e_mixture: component = " << component->toString() << std::endl;
+                
 		mix->addComponent(component, w);
 		//delete component;
 	}
@@ -267,10 +279,12 @@ std::shared_ptr<Mixture> deserialize_mixture(const problib::PDF& msg, int& i_dat
 void serialize_uniform(const Uniform& uniform, problib::PDF& msg) {
 	msg.data.push_back(problib::PDF::UNIFORM);
 	msg.data.push_back(uniform.getMaxDensity());
+        msg.dimensions.push_back(uniform.dimensions());
+//         std::cout << "serialize_uniform: dimensions added. dimensions = " << uniform.dimensions() << std::endl;
 }
 
-std::shared_ptr<Uniform> deserialize_uniform(const problib::PDF& msg, int& i_data) {
-	std::shared_ptr<Uniform> uniform = std::make_shared<Uniform>(msg.dimensions);
+std::shared_ptr<Uniform> deserialize_uniform(const problib::PDF& msg, int& i_data, int i_dimensions) {
+	std::shared_ptr<Uniform> uniform = std::make_shared<Uniform>(msg.dimensions[i_dimensions]);
 	uniform->setDensity(msg.data[i_data++]);
 	return uniform;
 }
@@ -279,6 +293,8 @@ void serialize_discrete(const PMF& pmf, problib::PDF& msg) {
 	pmf.getValues(msg.values);
 	pmf.getProbabilities(msg.probabilities);
 	msg.domain_size = pmf.getDomainSize();
+        msg.dimensions.push_back( pmf.dimensions() );
+//         std::cout << "serialize_discrete: dimensions added. dimensions = " << pmf.dimensions() << std::endl;
 }
 
 std::shared_ptr<PMF> deserialize_discrete(const problib::PDF& msg) {
@@ -297,12 +313,16 @@ void serialize_hybrid(const Hybrid& hybrid, problib::PDF& msg) {
     msg.data.push_back(problib::PDF::HYBRID);
 
     // add number of hybrid components
-    msg.data.push_back(hybrid.getPDFS().size());
+    msg.data.push_back(hybrid.getPDFS().size() );
 
     // add components themselves
-    const std::vector<std::shared_ptr<PDF>> pdfs = hybrid.getPDFS();
-    for(std::vector<std::shared_ptr<PDF>>::const_iterator it = pdfs.begin(); it != pdfs.end(); ++it) {
-        const PDF& pdf = **it;
+    const std::vector<Hybrid::distributionStruct> pdfs = hybrid.getPDFS();
+    for(std::vector<Hybrid::distributionStruct>::const_iterator it = pdfs.begin(); it != pdfs.end(); ++it) {
+           const PDF& pdf = *it->pdf;
+            
+        //const PDF& pdf = **it;
+        
+//         std::cout << "serialize_hybrid: size = " << pdf.dimensions() << std::endl;
 
         if (pdf.type() == PDF::DISCRETE) {
             bool already_contains_pmf = msg.domain_size != 0 || !msg.values.empty();
@@ -311,19 +331,43 @@ void serialize_hybrid(const Hybrid& hybrid, problib::PDF& msg) {
         }
 
         serialize(pdf, msg);
+        
+//         std::cout << "serialize hybrid: weight = " << it->weight << std::endl;
+        
+        msg.data.push_back(it->weight);
+        
     }
+    
+//     std::cout << "Hybrid serialized: msg.dimensions.size() = " << msg.dimensions.size() << " dimensions = " << std::endl;
+//     for(unsigned int i = 0; i < msg.dimensions.size(); i++)
+//     {
+//              std::cout << msg.dimensions[i]<< "\t";
+//     }
+//    std::cout << "\n";
 }
 
 std::shared_ptr<Hybrid> deserialize_hybrid(const problib::PDF& msg, int& i_data) {
+
     std::shared_ptr<Hybrid> hybrid = std::make_shared<Hybrid>();
 
     int num_components = (int)msg.data[i_data++];
+    
+//     std::cout << "deserialize_hybrid: num_components = " << num_components << std::endl;
 
     for(int c = 0; c < num_components; ++c) {
         int type = (int)msg.data[i_data++];
-
-        std::shared_ptr<PDF> pdf = deserialize(msg, type, i_data);
-        hybrid->addPDF(*pdf, -1);
+        //int dimension = msg.dimensions[c];
+        
+//         std::cout << "For component " << c << "dimension = " << msg.dimensions[c] << std::endl;
+        
+        std::shared_ptr<PDF> pdf = deserialize(msg, type, i_data, c);
+//         std::cout << "deserialize hybrid: pdf size = " <<  pdf->dimensions() << std::endl;
+//         std::cout << "deserialize_hybrid: pdf " << c << "  = " << pdf->toString() << std::endl;
+        
+        // TODO: add weight
+        double weight = msg.data[i_data++];
+//         std::cout << "deserialize hybrid: weight = " << weight << std::endl;
+        hybrid->addPDF(*pdf, weight);
       //  delete pdf;
     }
 

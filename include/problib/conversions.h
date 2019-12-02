@@ -103,6 +103,8 @@ std::shared_ptr<PMF> msgToPMF(const problib::PDF msg);
  */
 std::shared_ptr<const Gaussian> PDFtoGaussian(std::shared_ptr<const PDF> pdf);
 
+std::shared_ptr<const Hybrid> PDFtoHybrid(std::shared_ptr<const PDF> pdf);
+
 /**
  * @brief Casts a PDF object to a Mixture if the PDF represents a Mixture
  * @param msg The PDF object
@@ -131,11 +133,11 @@ std::string typeToName(PDF::PDFType type);
 
 void serialize(const PDF& gauss, problib::PDF& msg);
 
-std::shared_ptr<PDF> deserialize(const problib::PDF& msg, int type, int& i_data);
+std::shared_ptr<PDF> deserialize(const problib::PDF& msg, int type, int& i_data, int i_dimensions = 0);
 
 void serialize_gaussian(const Gaussian& gauss, problib::PDF& msg);
 
-std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data);
+std::shared_ptr<Gaussian> deserialize_gaussian(const problib::PDF& msg, int& i_data, int i_dimensions = 0);
 
 void serialize_mixture(const Mixture& mix, problib::PDF& msg);
 
@@ -143,7 +145,7 @@ std::shared_ptr<Mixture> deserialize_mixture(const problib::PDF& msg, int& i_dat
 
 void serialize_uniform(const Uniform& uniform, problib::PDF& msg);
 
-std::shared_ptr<Uniform> deserialize_uniform(const problib::PDF& msg, int& i_data);
+std::shared_ptr<Uniform> deserialize_uniform(const problib::PDF& msg, int& i_data, int i_dimensions = 0);
 
 void serialize_hybrid(const Hybrid& hybrid, problib::PDF& msg);
 

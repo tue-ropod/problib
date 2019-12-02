@@ -85,8 +85,60 @@ void Hybrid::cloneStruct() {
 	}
 }
 
-double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const {
-    assert_msg(false, "Likelihood method not implemented. Please create a subclass of Hybrid and implement your own method.");
+double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO asserts do not terminate program?!
+    //assert_msg(false, "Likelihood method not implemented. Please create a subclass of Hybrid and implement your own method.");
+         assert_msg(ptr_, "Hybrid does not contain components.");
+         assert_msg(pdf->type() == HYBRID, "Likelihood of hybrid: only hybrid can be considered.");
+          
+      //   std::cout << "pdf->type() = " << pdf->type() << std::endl;
+         
+         std::shared_ptr<const Hybrid> otherHybrid = std::static_pointer_cast<const Hybrid>(pdf);
+         assert(this->getPDFS().size() == otherHybrid->getPDFS().size());
+        
+        // std::cout << "this->getPDFS().size() = " << this->getPDFS().size() << std::endl;
+        // std::cout << "otherHybrid->getPDFS().size() = " << otherHybrid->getPDFS().size() << std::endl;
+         bool check =  this->getPDFS().size() == otherHybrid->getPDFS().size() ;
+       //  std::cout << "check = " << check << std::endl;
+         
+       //  std::cout << "Hybrid get likelihood: other = " << otherHybrid->toString() << std::endl;
+         
+        double likelihood = 0.0, weightsum = 0.0;
+        
+        for (unsigned int iHyb = 0; iHyb < ptr_->pdfDistribution_.size(); iHyb++)
+                //std::vector<distributionStruct>::const_iterator it_dist = ptr_->pdfDistribution_.begin(); it_dist != ptr_->pdfDistribution_.end(); ++it_dist) 
+        {
+               /* ptr_->pdfDistribution_[iHyb].pdf;
+                ptr_->pdfDistribution_[iHyb].weight;
+                
+                otherHybrid->getPDFS()[iHyb].pdf;
+                otherHybrid->getPDFS()[iHyb].weight;
+                */
+                
+                double weight = ptr_->pdfDistribution_[iHyb].weight*otherHybrid->getPDFS()[iHyb].weight;
+                weightsum += weight;
+//                 std::cout << "Hybrid: weight = " << weight << std::endl;
+//                 std::cout << "Hybrid: this pdf = " << ptr_->pdfDistribution_[iHyb].pdf->toString() << std::endl;
+                
+                std::shared_ptr<const PDF> otherPDF = otherHybrid->getPDFS()[iHyb].pdf;
+//                 std::cout << "Hybrid: other pdf = " << otherPDF->toString() << std::endl;
+                likelihood += weight *  ptr_->pdfDistribution_[iHyb].pdf->getLikelihood(otherPDF);
+        }
+        
+        return likelihood/weightsum; // correct (normalize) for taking both weights into consideration
+        
+   /*   // Mixture implementation. TODO: adopt & update with proper checks   
+        assert_msg(ptr_, "Mixture does not contain components.");
+        assert(ptr_->num_components_ > 0);
+        assert(ptr_->weights_total_ == 1);
+
+        double likelihood = 0;
+        std::vector<double>::const_iterator it_w =ptr_-> weights_.begin();
+        for (std::vector<std::shared_ptr<PDF>>::const_iterator it_pdf = ptr_->components_.begin(); it_pdf != ptr_->components_.end(); ++it_pdf) {
+                likelihood += (*it_w) * (*it_pdf)->getLikelihood(pdf);
+                ++it_w;
+        }
+        return likelihood;
+     */   
 }
 
 void Hybrid::clear() {
@@ -117,12 +169,18 @@ void Hybrid::addPDF(const PDF& pdf, double priority) {
 		cloneStruct();
 	}
 
-    ptr_->pdfs_.push_back(pdf.clone());
+// 	std::cout << "Hybrid::addPDF = " << pdf.toString()<< std::endl;
+	
+        distributionStruct distribution;
+        distribution.pdf = pdf.clone();
+        distribution.weight = priority;
+        
+        ptr_->pdfDistribution_.push_back(distribution);
 }
 
-const std::vector<std::shared_ptr<PDF>>& Hybrid::getPDFS() const {
+const std::vector<Hybrid::distributionStruct>& Hybrid::getPDFS() const {
     assert_msg(ptr_, "Hybrid does not contain pdfs.");
-    return ptr_->pdfs_;
+    return ptr_->pdfDistribution_;
 }
 
 std::string Hybrid::toString(const std::string& indent) const {
@@ -134,8 +192,8 @@ std::string Hybrid::toString(const std::string& indent) const {
 
 	std::stringstream ss;
     ss << "HYBRID{\n";
-    for (std::vector<std::shared_ptr<PDF>>::const_iterator it_pdf = ptr_->pdfs_.begin(); it_pdf != ptr_->pdfs_.end(); ++it_pdf) {
-        ss << new_indent << (*it_pdf)->toString(new_indent) << "\n";
+    for (std::vector<Hybrid::distributionStruct>::const_iterator it_pdf = ptr_->pdfDistribution_.begin(); it_pdf != ptr_->pdfDistribution_.end(); ++it_pdf) {
+        ss << new_indent << it_pdf->pdf->toString(new_indent) << " weight = " << it_pdf->weight << "\n";
 	}
 	ss << indent << "}";
 	return ss.str();

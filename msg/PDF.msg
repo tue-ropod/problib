@@ -9,7 +9,7 @@ uint8 DISCRETE=5
 uint8 HYBRID=6
 
 uint8 type
-uint32 dimensions
+uint32[] dimensions
 
 # For continuous pdf's
 float64[] data

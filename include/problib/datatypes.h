@@ -37,7 +37,7 @@
 #ifndef PROBLIB_DATATYPES_H_
 #define PROBLIB_DATATYPES_H_
 
-#define ARMA_DONT_USE_WRAPPER
+
 #include <armadillo>
 
 //#include <eigen3/Eigen/Dense>
@@ -108,6 +108,20 @@ public:
 
 };
 
+class Vector5 : public arma::vec5 {
+
+
+public:
+        Vector5(double v0, double v1, double v2, double v3, double v4) {
+                (*this)(0) = v0;
+                (*this)(1) = v1;
+                (*this)(2) = v2;
+                (*this)(3) = v3;
+                (*this)(4) = v4;
+        }
+
+};
+
 //class Matrix3 : public Eigen::Matrix3d {
 class Matrix3 : public arma::mat33 {
 
@@ -133,6 +147,20 @@ public:
 		(*this)(2, 2) = m22;
 		(*this)(3, 3) = m33;
 	}
+};
+
+class Matrix5 : public arma::mat55 {
+
+public:
+        Matrix5(double m00, double m11, double m22, double m33,  double m44) {
+                //this->setZero();
+                this->zeros();
+                (*this)(0, 0) = m00;
+                (*this)(1, 1) = m11;
+                (*this)(2, 2) = m22;
+                (*this)(3, 3) = m33;
+                (*this)(4, 4) = m44;
+        }
 };
 
 

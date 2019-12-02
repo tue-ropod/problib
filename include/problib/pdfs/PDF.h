@@ -54,7 +54,7 @@ public:
 		UNIFORM,
 		DISCRETE,
 		EXACT,
-        HYBRID,
+                HYBRID,
 		UNKNOWN
 	};
 

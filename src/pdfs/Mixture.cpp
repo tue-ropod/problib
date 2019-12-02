@@ -139,6 +139,8 @@ void Mixture::addComponent(std::shared_ptr<const PDF> pdf, double w) {
 	} else {
 		cloneStruct();
 	}
+	
+	std::cout << "Mixture::addComponent. pdf = " << pdf->toString() << std::endl;
 
 	ptr_->components_.push_back(pdf->clone());
 	ptr_->weights_.push_back(w);

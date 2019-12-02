@@ -156,13 +156,10 @@ double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma
 	// check dimensions
 	//assert(v1.size() == v2.size()  && v1.size()  == S.rows());
         assert(v1.n_elem == v2.n_elem && v1.n_elem == S.n_rows);
- double det = arma::det(S);
+        
+        double det = arma::det(S);
 	//double det = S.determinant();
 	// covariance should have non-zero determinant
-        
-//         std::cout << "Gaussian: S = " << S << std::endl;
-//         std::cout << "Gaussian: det = " << det << std::endl;
-        
 	assert(det != 0);
 
 	// calculate difference between v1 and v2
@@ -170,12 +167,8 @@ double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma
         arma::vec diff = v2 - v1;
 
 	// calculate squared mahalanobis distance
-	//double mahalanobis_dist_sq = diff.dot(S.inverse() * diff );
         double mahalanobis_dist_sq = arma::dot(arma::inv(S) * diff, diff);
 	// mahalanobis distance should always be 0 or positive
-        
-       // std::cout << "mahalanobis_dist_sq = " << mahalanobis_dist_sq << " diff = " << diff << "S inverse =  " << S.inverse() << std::endl;
-        
 	assert(mahalanobis_dist_sq >= 0);
 
 	// threshold to 0 if maximum mahalanobis distance is exceeded
@@ -190,7 +183,7 @@ double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma
     }
 
 	// calculate density
-    double pos_sqrt_pow = 1 / sqrt(pi2_pow * det);
+        double pos_sqrt_pow = 1 / sqrt(pi2_pow * det);
 	return exp(-0.5 * mahalanobis_dist_sq) * pos_sqrt_pow;
 }
 

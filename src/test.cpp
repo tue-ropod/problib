@@ -120,9 +120,10 @@ void test() {
     cout << H_received->toString() << endl;
 
 	Vector3 mean1(0, 0, 0);
-	Matrix3 var1(1, 1, 1);
+	Matrix3 var1(12, 51, 59);
 	std::shared_ptr<Gaussian> pdf1 = std::make_shared<Gaussian> (mean1, var1);
 
+        
 	Vector3 mean2(1, 1, 1);
 	Matrix3 var2(0.1, 0.1, 0.1);
 	std::shared_ptr<Gaussian> pdf2 =  std::make_shared<Gaussian>(mean2, var2);
@@ -130,6 +131,20 @@ void test() {
 	Vector3 mean3(0.3, 2, -0.7);
 	Matrix3 var3(0.2, 0.1, 0.4);
         std::shared_ptr<Gaussian> pdf3 =  std::make_shared<Gaussian>(mean3, var3);
+        
+        pbl::Vector3 mean4(1, 1, 1);
+        Matrix3 var4(0.2, 0.2, 0.2);
+        std::shared_ptr< const Gaussian> pdf4 =  std::make_shared<Gaussian>(mean4, var4);
+        
+        std::shared_ptr<Hybrid> H2 = std::make_shared<Hybrid>();
+        H2->addPDF(*pdf1, 0.5);
+        H2->addPDF(*pdf2, 0.5);
+        
+        std::shared_ptr<Hybrid> H3 = std::make_shared<Hybrid>();
+        H3->addPDF(*pdf3, 0.5);
+        H3->addPDF(*pdf4, 0.5);
+
+        std::cout << "H2.getLikelihood(H3) = " << H2->getLikelihood(H3) << std::endl;
 
 	//Mixture mix;
          std::shared_ptr<Mixture> mix =  std::make_shared<Mixture>();
