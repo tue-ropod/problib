@@ -104,6 +104,8 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
          
         double likelihood = 0.0, weightsum = 0.0;
         
+        //std::cout << "Hybrid: ptr_->pdfDistribution_.size() = " << ptr_->pdfDistribution_.size() << std::endl;
+        
         for (unsigned int iHyb = 0; iHyb < ptr_->pdfDistribution_.size(); iHyb++)
                 //std::vector<distributionStruct>::const_iterator it_dist = ptr_->pdfDistribution_.begin(); it_dist != ptr_->pdfDistribution_.end(); ++it_dist) 
         {
@@ -117,12 +119,19 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
                 double weight = ptr_->pdfDistribution_[iHyb].weight*otherHybrid->getPDFS()[iHyb].weight;
                 weightsum += weight;
 //                 std::cout << "Hybrid: weight = " << weight << std::endl;
-//                 std::cout << "Hybrid: this pdf = " << ptr_->pdfDistribution_[iHyb].pdf->toString() << std::endl;
-                
+              /*  if(iHyb == 0 )
+                {                       std::cout << "Hybrid, rectangle: this pdf = " << ptr_->pdfDistribution_[iHyb].pdf->toString() << std::endl;}
+                else 
+                        {                       std::cout << "Hybrid, circle: this pdf = " << ptr_->pdfDistribution_[iHyb].pdf->toString() << std::endl;}
+*/
                 std::shared_ptr<const PDF> otherPDF = otherHybrid->getPDFS()[iHyb].pdf;
+                
+                //std::cout << "other pdf = " << otherPDF->toString() << std::endl;
 //                 std::cout << "Hybrid: other pdf = " << otherPDF->toString() << std::endl;
                 likelihood += weight *  ptr_->pdfDistribution_[iHyb].pdf->getLikelihood(otherPDF);
         }
+        
+//         std::cout << "Hybrid: likelihood, weightsum, return = " << likelihood << ", " << weightsum << ", " << likelihood/weightsum << std::endl;
         
         return likelihood/weightsum; // correct (normalize) for taking both weights into consideration
         

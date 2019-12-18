@@ -24,6 +24,10 @@ find_package(LAPACK)
 MESSAGE("Adding definition ARMA_USE_LAPACK...")
 ADD_DEFINITIONS(-DARMA_USE_LAPACK)
 
+#find_package(LABLAS)
+#MESSAGE("Adding definition ARMA_USE_BLAS...")
+#ADD_DEFINITIONS(-DARMA_USE_BLAS)
+
 # Generate messages in the 'msg' folder
 add_message_files(
     DIRECTORY msg

@@ -157,6 +157,9 @@ double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma
 	//assert(v1.size() == v2.size()  && v1.size()  == S.rows());
         assert(v1.n_elem == v2.n_elem && v1.n_elem == S.n_rows);
         
+//         std::cout << "Gaussian: v1 = " << v1 << " v2 = " << v2 << " S = " << S << std::endl;
+        
+        
         double det = arma::det(S);
 	//double det = S.determinant();
 	// covariance should have non-zero determinant
