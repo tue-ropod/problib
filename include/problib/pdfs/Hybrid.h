@@ -11,6 +11,10 @@
 #include "PDF.h"
 #include "problib/pdfs/Gaussian.h"
 
+//#include <cassert>
+ 
+// Use (void) to silent unused warnings.
+//#define assertm(exp, msg) assert(((void)msg, exp))
 namespace pbl {
 
 class Hybrid: public PDF {

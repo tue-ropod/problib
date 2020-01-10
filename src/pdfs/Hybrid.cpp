@@ -97,7 +97,7 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
         
         // std::cout << "this->getPDFS().size() = " << this->getPDFS().size() << std::endl;
         // std::cout << "otherHybrid->getPDFS().size() = " << otherHybrid->getPDFS().size() << std::endl;
-         bool check =  this->getPDFS().size() == otherHybrid->getPDFS().size() ;
+//          bool check =  this->getPDFS().size() == otherHybrid->getPDFS().size() ;
        //  std::cout << "check = " << check << std::endl;
          
        //  std::cout << "Hybrid get likelihood: other = " << otherHybrid->toString() << std::endl;
@@ -124,13 +124,33 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
                 else 
                         {                       std::cout << "Hybrid, circle: this pdf = " << ptr_->pdfDistribution_[iHyb].pdf->toString() << std::endl;}
 */
+                std::shared_ptr<const PDF> thisPDF =  ptr_->pdfDistribution_[iHyb].pdf;
                 std::shared_ptr<const PDF> otherPDF = otherHybrid->getPDFS()[iHyb].pdf;
+                
+                assert_msg(thisPDF->type() == otherPDF->type(), "Likelihood of hybrid: different pdf's can not be considered.");
+                
+                bool test = thisPDF->type() == GAUSSIAN ;
+//                 std::cout << "thisPDF->type() = " << thisPDF->type() << " check for Gauss = " << test << std::endl;
+                
+                if(thisPDF->type() == GAUSSIAN)
+                {
+                        std::shared_ptr<const Gaussian> thisGauss = std::static_pointer_cast<const Gaussian>(thisPDF);
+                        std::shared_ptr<const Gaussian> otherGauss =  std::static_pointer_cast<const Gaussian>(otherPDF);
+                        
+//                         bool test2 = thisGauss->getMean().size() == otherGauss->getMean().size() ;
+//                         std::cout << "size = " << thisGauss->getMean().size() << ", " << otherGauss->getMean().size() << " check = " << test2 << std::endl;
+                        
+                        assert_msg(thisGauss->getMean().size() == otherGauss->getMean().size(), "Hybrid: unequal state dimensions."); 
+                }
+                
                 
                 //std::cout << "other pdf = " << otherPDF->toString() << std::endl;
 //                 std::cout << "Hybrid: other pdf = " << otherPDF->toString() << std::endl;
-                likelihood += weight *  ptr_->pdfDistribution_[iHyb].pdf->getLikelihood(otherPDF);
+                likelihood += weight * thisPDF->getLikelihood(otherPDF);
         }
         
+//         std::cout << "Hybrid get likelihood: this = " << this->toString() << std::endl;
+//         std::cout << "Hybrid get likelihood: other = " << otherHybrid->toString() << std::endl;
 //         std::cout << "Hybrid: likelihood, weightsum, return = " << likelihood << ", " << weightsum << ", " << likelihood/weightsum << std::endl;
         
         return likelihood/weightsum; // correct (normalize) for taking both weights into consideration
