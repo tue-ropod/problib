@@ -109,6 +109,7 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
         for (unsigned int iHyb = 0; iHyb < ptr_->pdfDistribution_.size(); iHyb++)
                 //std::vector<distributionStruct>::const_iterator it_dist = ptr_->pdfDistribution_.begin(); it_dist != ptr_->pdfDistribution_.end(); ++it_dist) 
         {
+//                 std::cout << "iHyb = " << iHyb << std::endl;
                /* ptr_->pdfDistribution_[iHyb].pdf;
                 ptr_->pdfDistribution_[iHyb].weight;
                 
@@ -143,15 +144,18 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
                         assert_msg(thisGauss->getMean().size() == otherGauss->getMean().size(), "Hybrid: unequal state dimensions."); 
                 }
                 
-                
-                //std::cout << "other pdf = " << otherPDF->toString() << std::endl;
+               
 //                 std::cout << "Hybrid: other pdf = " << otherPDF->toString() << std::endl;
                 likelihood += weight * thisPDF->getLikelihood(otherPDF);
+//                 std::cout << "Hybrid: this pdf = " << thisPDF->toString() << " weight = "  << ptr_->pdfDistribution_[iHyb].weight << std::endl;
+//                 std::cout << "Hybrid: other pdf = " << otherPDF->toString() << " weight = "  << otherHybrid->getPDFS()[iHyb].weight << std::endl;
+//                 std::cout << "Hybrid: likelihood component = " << thisPDF->getLikelihood(otherPDF) << std::endl;
+//                 std::cout << "Hybrid: weightProduct = " << weight << "\n\n" << std::endl;
         }
         
-//         std::cout << "Hybrid get likelihood: this = " << this->toString() << std::endl;
-//         std::cout << "Hybrid get likelihood: other = " << otherHybrid->toString() << std::endl;
-//         std::cout << "Hybrid: likelihood, weightsum, return = " << likelihood << ", " << weightsum << ", " << likelihood/weightsum << std::endl;
+//          std::cout << "Hybrid: get likelihood: this = " << this->toString() << std::endl;
+//          std::cout << "Hybrid: get likelihood: other = " << otherHybrid->toString() << std::endl;
+//          std::cout << "Hybrid: likelihood, weightsum, likelihood/weightsum = " << likelihood << ", " << weightsum << ", " << likelihood/weightsum << "\n\n" << std::endl;
         
         return likelihood/weightsum; // correct (normalize) for taking both weights into consideration
         
