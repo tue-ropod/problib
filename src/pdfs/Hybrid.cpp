@@ -72,24 +72,27 @@ double Hybrid::getLikelihood(std::shared_ptr<const PDF> pdf) const { // TODO ass
         
         for (unsigned int iHyb = 0; iHyb < ptr_->pdfDistribution_.size(); iHyb++)
         {
-                double weight = ptr_->pdfDistribution_[iHyb].weight*otherHybrid->getPDFS()[iHyb].weight;
-                weightsum += weight;
-                
                 std::shared_ptr<const PDF> thisPDF =  ptr_->pdfDistribution_[iHyb].pdf;
                 std::shared_ptr<const PDF> otherPDF = otherHybrid->getPDFS()[iHyb].pdf;
                 
-                assert_msg(thisPDF->type() == otherPDF->type(), "Likelihood of hybrid: different pdf's can not be considered.");
-                
-                bool test = thisPDF->type() == GAUSSIAN ;
+                assert_msg(thisPDF->type() == otherPDF->type(), "Likelihood of hybrid: different pdf-types can not be considered.");
                 
                 if(thisPDF->type() == GAUSSIAN)
                 {
                         std::shared_ptr<const Gaussian> thisGauss = std::static_pointer_cast<const Gaussian>(thisPDF);
                         std::shared_ptr<const Gaussian> otherGauss =  std::static_pointer_cast<const Gaussian>(otherPDF);
+                        
                         assert_msg(thisGauss->getMean().size() == otherGauss->getMean().size(), "Hybrid: unequal state dimensions."); 
                 }
                 
-                likelihood += weight * thisPDF->getLikelihood(otherPDF);
+                double weight = ptr_->pdfDistribution_[iHyb].weight*otherHybrid->getPDFS()[iHyb].weight;
+                double attribution = weight * thisPDF->getLikelihood(otherPDF);
+                
+                if(attribution == attribution) // do not add NaN in contributions
+                {
+                        likelihood += weight * thisPDF->getLikelihood(otherPDF);
+                        weightsum += weight;
+                }
         }
                 
         return likelihood/weightsum; // correct (normalize) for taking both weights into consideration
