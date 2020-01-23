@@ -158,21 +158,14 @@ void Uniform::setSize(const pbl::Vector size) {
 }
 
 void Uniform::calculateUniformDensity() {
-//         std::cout << "calculateUniformDensity" << std::endl;
     double volume = 1;
-//       std::cout << "calculateUniformDensity 1" << std::endl;
     
     for(unsigned int i = 0; i < size_.size(); ++i) {
         volume *= size_(i);
     }
-//       std::cout << "calculateUniformDensity2" << std::endl;
     
     uniform_probability_ = 1.0 / volume;
-//       std::cout << "calculateUniformDensity3" << std::endl;
-    
     size_is_set_ = true;
-//       std::cout << "End of calculateUniformDensity" << std::endl;
-    
 }
 
 std::string Uniform::toString(const std::string& indent) const {
