@@ -45,56 +45,21 @@ using namespace pbl;
 Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
 }
 
-/* Gaussian::Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
-//     //if (ptr_) {
-//     //    ++ptr_->n_ptrs_;
-//     //}
- }
- */
-
 Gaussian::~Gaussian() {
-	//if (ptr_) {
-	//	--ptr_->n_ptrs_;
-//
-//		if (ptr_->n_ptrs_ == 0) {
-//			delete ptr_;
-//		}
-//	}
 }
 
 Gaussian& Gaussian::operator=(const Gaussian& other)  {
 	if (this != &other)  {
-//		if (ptr_) {
-//			--ptr_->n_ptrs_;
-//			if (ptr_->n_ptrs_ == 0) {
-//				delete ptr_;
-//			}
-//		}
 		ptr_ = other.ptr_;
-//		++ptr_->n_ptrs_;
-
 		dimensions_ = other.dimensions_;
 	}
 	return *this;
 }
 
-/*std::shared_ptr<Gaussian> Gaussian::clone() const {
-        
-        std::shared_ptr<Gaussian> p = std::make_shared< Gaussian>(*this);
-	return p;
-}
-*/
-
-/*std::shared_ptr<Gaussian> Gaussian::clone() const {
-        
-        std::shared_ptr<Gaussian> p = std::make_shared< Gaussian>(*this);
-        return p;
-}*/
 
 
 void Gaussian::cloneStruct() {
 	if (ptr_.use_count() > 1) {
-		//--ptr_->n_ptrs_;
 		ptr_ = std::make_shared<GaussianStruct>(*ptr_);
 	}
 }
@@ -103,37 +68,25 @@ double Gaussian::getLikelihood(std::shared_ptr<const PDF> pdf) const {
 	CHECK_INITIALIZED
 	if (pdf->type() == PDF::GAUSSIAN) {
 		std::shared_ptr<const Gaussian> G = std::static_pointer_cast<const Gaussian>(pdf);
-               // std::cout << "G = " << G->toString()  << std::endl;
-                
 		return getDensity(*G);
 	} else if (pdf->type() == PDF::UNIFORM) {
 		std::shared_ptr<const Uniform> U = std::static_pointer_cast<const Uniform>(pdf);
                std::shared_ptr<const PDF> test = shared_from_this();
-                
-          //     ptest = 
-               
-        return U->getLikelihood(test);
-        
-        //std::shared_ptr<const pbl::PDF>&’ from an rvalue of type 
-        //std::shared_ptr<const pbl::PDF>’
 
-        
+        return U->getLikelihood(test);
 	}
 
 	assert_msg(false, "Gaussian: Likelihood can only be calculated with another Gaussian or Uniform pdf.");
-	
 	return 0;
 }
 
 double Gaussian::getDensity(const arma::vec& v, double max_mah_dist) const {
-//double Gaussian::getDensity(const Eigen::VectorXd& v, double max_mah_dist) const {
 	CHECK_INITIALIZED
 	return getDensity(v, ptr_->mu_, ptr_->cov_, max_mah_dist);
 }
 
 double Gaussian::getDensity(const Gaussian& G, double max_mah_dist) const {
 	CHECK_INITIALIZED
-	//Eigen::MatrixXd S = G.getCovariance() + ptr_->cov_;
         arma::mat S = G.getCovariance() + ptr_->cov_;
 	return getDensity(ptr_->mu_, G.getMean(), S);
 	
@@ -144,33 +97,25 @@ double Gaussian::getMaxDensity() const {
 	return getDensity(ptr_->mu_, ptr_->mu_, ptr_->cov_);
 }
 
-//bool Gaussian::getExpectedValue(Eigen::VectorXd& v) const {
 bool Gaussian::getExpectedValue(arma::vec& v) const {
 	CHECK_INITIALIZED
 	v = ptr_->mu_;
 	return true;
 }
 
-//double Gaussian::getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2, const Eigen::MatrixXd& S, double max_mah_dist) const {
 double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma::mat& S, double max_mah_dist) const {
 	// check dimensions
-	//assert(v1.size() == v2.size()  && v1.size()  == S.rows());
         assert(v1.n_elem == v2.n_elem && v1.n_elem == S.n_rows);
-        
-//         std::cout << "Gaussian: v1 = " << v1 << " v2 = " << v2 << " S = " << S << std::endl;
-        
-        
-        double det = arma::det(S);
-	//double det = S.determinant();
+
+    double det = arma::det(S);
+
 	// covariance should have non-zero determinant
 	assert(det != 0);
 
-	// calculate difference between v1 and v2
-	//Eigen::VectorXd diff = v2 - v1;
         arma::vec diff = v2 - v1;
 
 	// calculate squared mahalanobis distance
-        double mahalanobis_dist_sq = arma::dot(arma::inv(S) * diff, diff);
+    double mahalanobis_dist_sq = arma::dot(arma::inv(S) * diff, diff);
 	// mahalanobis distance should always be 0 or positive
 	assert(mahalanobis_dist_sq >= 0);
 
@@ -180,52 +125,41 @@ double Gaussian::getDensity(const arma::vec& v1, const arma::vec& v2, const arma
 	}
 
     double pi2_pow = 1;
-    //for(unsigned int d = 0; d < S.rows(); ++d) {
     for(unsigned int d = 0; d < S.n_rows; ++d) {
         pi2_pow *= 2 * M_PI;
     }
 
 	// calculate density
-        double pos_sqrt_pow = 1 / sqrt(pi2_pow * det);
-	return exp(-0.5 * mahalanobis_dist_sq) * pos_sqrt_pow;
+    double pos_sqrt_pow = 1 / sqrt(pi2_pow * det);
+    double density = exp(-0.5 * mahalanobis_dist_sq) * pos_sqrt_pow;
+	return density;
 }
 
-//void Gaussian::setMean(const Eigen::VectorXd& mu) {
-        
 void Gaussian::setMean(const arma::vec& mu) {
 	if (ptr_) {
 		cloneStruct();
 	} else {
-	  //int nElements = mu.rows()*mu.cols();
-	 // Eigen::MatrixXd newMatrix(nElements, nElements);
-	  //ptr_ = std::make_shared<GaussianStruct>(mu, newMatrix.setZero());
           ptr_ = std::make_shared< GaussianStruct>(mu, arma::zeros(mu.n_elem, mu.n_elem));
-
 	}
 
 	ptr_->mu_ = mu;
 }
 
-//void Gaussian::setCovariance(const Eigen::MatrixXd& cov) {
 void Gaussian::setCovariance(const arma::mat& cov) {
 	if (ptr_) {
 		cloneStruct(); 
 	} else {
-	 // Eigen::VectorXd newMatrix;
-	//	ptr_ = std::make_shared<GaussianStruct>(newMatrix.setZero(cov.cols()), cov);
                 ptr_ = std::make_shared< GaussianStruct>(arma::zeros(cov.n_cols), cov);
 	}
 
 	ptr_->cov_ = cov;
 }
 
-//const Eigen::VectorXd& Gaussian::getMean() const {
 const arma::vec& Gaussian::getMean() const {
 	CHECK_INITIALIZED
 	return ptr_->mu_;
 }
 
-//const Eigen::MatrixXd& Gaussian::getCovariance() const {
 const arma::mat& Gaussian::getCovariance() const {
 	CHECK_INITIALIZED
 	return ptr_->cov_;

@@ -78,12 +78,6 @@ public:
      * @brief Copy constructor
      */
 	Gaussian(const Gaussian& orig);
-        //Gaussian(const Gaussian& orig) : PDF(orig.ptr_->mu_.size(), PDF::GAUSSIAN), ptr_(orig.ptr_) {
-    //if (ptr_) {
-    //    ++ptr_->n_ptrs_;
-    //}
-//}
-
 
     /**
      * @brief Destructor
@@ -106,10 +100,7 @@ public:
     std::shared_ptr<PDF> clone() const{ return CloneMethod(); };
     
     std::shared_ptr<Gaussian> CloneMethod() const { 
-            
-      //      Gaussian* Gtest = new Gaussian(*this);
-//std::cout << "CLONING" << std::endl;
-            
+
             std::shared_ptr<Gaussian> G = std::make_shared< Gaussian>(*this);
             
             return G;
@@ -119,12 +110,6 @@ public:
             return std::make_shared< Gaussian>(*this);
 }
    
-    
-    /*  std::shared_ptr< Gaussian > Clone() const {
-        std::cout << "Derived::Clone\n";
-        return std::static_pointer_cast< Gaussian >(CloneImplementation());
-     }
-*/
 	double getLikelihood(std::shared_ptr<const PDF> pdf) const;
 
     /**
@@ -133,9 +118,7 @@ public:
      * @param max_mah_dist
      * @return The density of the Gaussian at point v.
      */
-//	double getDensity(const Eigen::VectorXd& v, double max_mah_dist = 0) const;
-double getDensity(const arma::vec& v, double max_mah_dist = 0) const;
-
+    double getDensity(const arma::vec& v, double max_mah_dist = 0) const;
 
 	double getDensity(const Gaussian& npdf, double max_mah_dist = 0) const;
 
@@ -152,35 +135,30 @@ double getDensity(const arma::vec& v, double max_mah_dist = 0) const;
      * @param v The returned expected value
      * @return Always true
      */
-	//bool getExpectedValue(Eigen::VectorXd& v) const;
 	bool getExpectedValue(arma::vec& v) const;
 
     /**
      * @brief Sets the mean of the Gaussian
      * @param mu The mean of the Gaussian
      */
-	//void setMean(const Eigen::VectorXd& mu);
         void setMean(const arma::vec& mu);
 
     /**
      * @brief Sets the covariance of the Gaussian
      * @param cov The covariance matrix of the Gaussian
      */
-	//void setCovariance(const Eigen::MatrixXd& cov);
         void setCovariance(const arma::mat& cov);
 
     /**
      * @brief Returns the mean of the Gaussian
      * @return The mean of the Gaussian
      */
-	//const Eigen::VectorXd& getMean() const;
         const arma::vec& getMean() const;
 
     /**
      * @brief Returns the covariance matrix of the Gaussian
      * @return The covariance matrix of the Gaussian
      */
-	//const Eigen::MatrixXd& getCovariance() const;
         const arma::mat& getCovariance() const;
 
     /**
@@ -189,46 +167,24 @@ double getDensity(const arma::vec& v, double max_mah_dist = 0) const;
      * @return The Gaussian as string
      */
 	std::string toString(const std::string& indent = "") const;
-        
-      // virtual std::shared_ptr< PDF > CloneImplementation() const override;
-         
-// virtual std::shared_ptr< PDF > CloneImplementation() const override {
-//         std::cout << "Derived::CloneImplementation\n";
-//         return std::shared_ptr< Gaussian >(new Gaussian(*this));
-//     }
 protected:
 
 	struct GaussianStruct {
-
-		//Eigen::VectorXd mu_;
-
-		//Eigen::MatrixXd cov_;
                 
                 arma::vec mu_;
 
                 arma::mat cov_;
 
-		//int n_ptrs_;
-
-		//GaussianStruct(const Eigen::VectorXd& mu, const Eigen::MatrixXd& cov) : mu_(mu) , cov_(cov) { }
-GaussianStruct(const arma::vec& mu, const arma::mat& cov) : mu_(mu) , cov_(cov) { }
+        GaussianStruct(const arma::vec& mu, const arma::mat& cov) : mu_(mu) , cov_(cov) { }
 
 		GaussianStruct(const GaussianStruct& orig) : mu_(orig.mu_), cov_(orig.cov_) { }
 	};
 
-        
-       /*  std::shared_ptr< PDF > CloneImplementation() const override {
-        std::cout << "Derived::CloneImplementation\n";
-        Gaussian* pG = new Gaussian(*this);
-        return std::shared_ptr< Gaussian >(pG);
- }*/
-        
 	std::shared_ptr<GaussianStruct> ptr_;
 
 	void cloneStruct();
 
-	//double getDensity(const Eigen::VectorXd& v1, const Eigen::VectorXd& v2, const Eigen::MatrixXd& S, double max_mah_dist = 0) const;
-        double getDensity(const arma::vec& v1, const arma::vec& v2, const arma::mat& S, double max_mah_dist = 0) const;
+   double getDensity(const arma::vec& v1, const arma::vec& v2, const arma::mat& S, double max_mah_dist = 0) const;
 
 #define CHECK_INITIALIZED assert_msg(ptr_, "Gaussian was not yet initialized.")
 
