@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(problib)
 
 #set(CMAKE_BUILD_TYPE "Debug")
-set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+#set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-std=c++11 HAS_STD_CPP11_FLAG)
@@ -79,8 +79,9 @@ add_library(problib
         include/${PROJECT_NAME}/pdfs/Mixture.h
         include/${PROJECT_NAME}/pdfs/Hybrid.h
         include/${PROJECT_NAME}/pdfs/PMF.h)
-          
-target_link_libraries(problib ${catkin_LIBRARIES})
+
+target_link_libraries(problib -O2 blas lapack ${catkin_LIBRARIES})         
+#target_link_libraries(problib ${catkin_LIBRARIES})
 add_dependencies(problib ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 # add test executable
